@@ -1,24 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import Mainpage from "./components/Mainpage.js";
+import Container from '@material-ui/core/Container';
+import { makeStyles } from '@material-ui/core/styles';
+import logo from "./img/RaspberrySwap_logo.png"
+
+
+
+
+
+const useStyles = makeStyles({
+    containbody: {
+      paddingTop : "50px",
+      paddingBottom: "50px",
+      paddingLeft: "48px",
+      paddingRight: "48px"
+    },
+
+  });
+
+
+  const imgresponsive = {
+    width: "20%",
+    height: "auto"
+
+  };
+
+
+
+
+
+
 
 function App() {
+  const classes = useStyles();
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+   <Router>
+     <Switch>
+       <Route>
+       <div style={{display:"flex", justifyContent:"center", alignItems:"center"}}>
+         <img src={logo} style={imgresponsive} />
+       </div>
+       <Container  className={classes.containbody} >
+          <Mainpage exact path="/" />
+        </Container>
+       </Route>
+     </Switch>
+   </Router>
   );
 }
 
