@@ -12,21 +12,32 @@ import Connectwallet from './rightcontainer/Connectwallet';
 
 
 
-const useStyles = makeStyles({
-    contain: {
-        padding: "10px",
-        height: "93vh",
-        background: "#720034",
-        borderRadius: "20px",
-        padding: "32px"
-    },
 
-    rightcontainer: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "25px"
+const useStyles = makeStyles( theme => {
+    return {
+        contain: {
+            padding: "10px",
+            height: "93vh",
+            background: "#720034",
+            borderRadius: "20px",
+            padding: "32px",
+            [theme.breakpoints.down('sm')]:{
+                height: '100%',
+                padding: '22px'
+            }
+
+        },
+
+        rightcontainer: {
+            display: "flex",
+            flexDirection: "column",
+            gap: "25px",
+            [theme.breakpoints.down('sm')]:{
+                marginTop: '65px',
+            }
+        }
+
     }
-
   });
 
 

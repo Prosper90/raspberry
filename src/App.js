@@ -9,14 +9,22 @@ import logo from "./img/RaspberrySwap_logo.png"
 
 
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( theme => {
+  return{
     containbody: {
       paddingTop : "50px",
       paddingBottom: "50px",
       paddingLeft: "48px",
-      paddingRight: "48px"
-    },
+      paddingRight: "48px",
+      [theme.breakpoints.down('xs')]:{
+        paddingTop: '50px',
+        paddingLeft: '9px',
+        paddingRight: '9px',
+        paddingBottom: '50px'
+    }
 
+    },
+    }
   });
 
 

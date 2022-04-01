@@ -4,7 +4,7 @@ import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { alpha, styled } from '@material-ui/core/styles';
-import InputBase from '@material-ui/core/InputBase';
+
 
 
 
@@ -57,57 +57,73 @@ const CustomisedButton = styled(Button)({
 
 
 
+  
 
 
+const useStyles = makeStyles( theme => {
+    return{
+        background: {
+            backgroundColor : "#32003d",
+            height: "100%",
+            borderRadius: "30px;",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: '51px',
+            [theme.breakpoints.down('sm')]:{
+                gap: '42px',
+                padding: '27px',
+                height: '90%',
+            }
+        },
 
-const useStyles = makeStyles({
-    background: {
-        backgroundColor : "#32003d",
-        height: "100%",
-        borderRadius: "30px;",
+        formone: {
+            width: '87%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px',
+            [theme.breakpoints.down('sm')]:{
+                gap: '15px',
+                width: '83%',
+                padding: '27px',
+            }
+        },
+
+        formtwo: {
+            width: '87%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px',
+            [theme.breakpoints.down('sm')]:{
+                gap: '15px',
+                width: '83%',
+                padding: '27px',
+            }
+        },
+
+        pricehold: {
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: '51px'
-    },
+        justifyContent: "space-between",
+        width: '90%',
+        },
 
-    formone: {
+        formcontain: {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+        },
+
+        forminput: {
+        backgroundColor: '#eff0f2',
+        border: 'none',
+        textAlign: 'center',
+        borderRadius: '20px',
+        alignSelf: 'center',
         width: '87%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '15px'
-    },
-
-    formtwo: {
-        width: '87%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '15px'
-    },
-
-    pricehold: {
-      display: "flex",
-      justifyContent: "space-between",
-      width: '90%',
-    },
-
-    formcontain: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-    },
-
-    forminput: {
-      backgroundColor: '#eff0f2',
-      border: 'none',
-      textAlign: 'center',
-      borderRadius: '20px',
-      alignSelf: 'center',
-      width: '87%',
-      height: '36px',
+        height: '36px',
+        }
     }
-
   });
 
 
@@ -115,25 +131,30 @@ const useStyles = makeStyles({
 
 export default function Leftcontainer() {
     const classes = useStyles();
+    
+   
 
   return (
     <div className={classes.background}  >
+        <div className={classes.taxInfo}>
+          Tax:Buy 10% Sell 20%  <i className="fa-brands fa-android"></i>
+        </div>
         
         <div className={classes.formone}>
 
             <div className={classes.pricehold}>
-                <Typography variant="p" >
+                <Typography variant="body1" >
                     Price/BNB
                 </Typography> : 
-                <Typography variant="p" >
+                <Typography variant="body1" >
                     40059.004504
                 </Typography>
             </div>
             <div className={classes.pricehold}>
-                <Typography variant="p" >
+                <Typography variant="body1" >
                     Token Recieved
                 </Typography> 
-                <Typography variant="p" >
+                <Typography variant="body1" >
                     4,045 BM
                 </Typography>
             </div>
@@ -183,7 +204,7 @@ export default function Leftcontainer() {
             size="large"
             type="submit"
             >
-            BUY
+            SELL
             </CustomisedButton>
             </form>
             </div>

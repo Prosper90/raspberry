@@ -2,17 +2,21 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( theme => {
+    return{
     background: {
         backgroundColor : "#32003d",
         height: "70%",
         borderRadius: "30px;",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        [theme.breakpoints.down('sm')]:{
+            height: '71vh',
+        }
     },
 
-
+}
 
   });
 
