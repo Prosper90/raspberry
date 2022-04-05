@@ -3,7 +3,10 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import Mainpage from "./components/Mainpage.js";
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
-import logo from "./img/RaspberrySwap_logo.png"
+import logo from "./img/RaspberrySwap_logo.png";
+import { ReactNotifications } from 'react-notifications-component';
+import 'react-notifications-component/dist/theme.css';
+
 
 
 
@@ -48,8 +51,9 @@ function App() {
      <Switch>
        <Route>
        <div style={{display:"flex", justifyContent:"center", alignItems:"center"}}>
-         <img src={logo} style={imgresponsive} />
+         <img src={logo} style={imgresponsive} alt="logo-img" />
        </div>
+       <ReactNotifications />
        <Container  className={classes.containbody} >
           <Mainpage exact path="/" />
         </Container>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { styled } from '@material-ui/core/styles';
@@ -37,11 +37,11 @@ const CustomisedButton = styled(Button)({
   },
   '&:active': {
     boxShadow: 'none',
-    backgroundColor: '#0062cc',
-    borderColor: '#005cbf',
+    backgroundColor: '#290131',
+    borderColor: '#290131',
   },
   '&:focus': {
-    boxShadow: '0 0 0 0.2rem rgba(0,123,255,.5)',
+    boxShadow: '#290131',
   },
 });
 
@@ -56,18 +56,53 @@ const useStyles = makeStyles({
 
 
 
-export default function Connectwallet() {
+export default function Connectwallet(props) {
   const classes = useStyles();
+ 
+
+
+
+  const logInto = () => {
+    props.login()
+    //console.log("login called");
+    props.changeloginValue(true); //changeLoginStat(false); 
+  }
+
+
+  const logOutOf = () => {
+    props.logout()
+    //console.log("logout called");
+    props.changeloginValue(false);  //changeLoginStat(true)
+  }
 
 
   return (
     <div className={classes.walletcontain}>
+       { props.loginCheck
+        ?
+        (  
         <CustomisedButton variant="contained"
         background="#32003d"
         size="large"
+        onClick={logOutOf}
         >
-          Connect Wallet
+          Logout
         </CustomisedButton>
+        )
+        :
+        (
+
+        <CustomisedButton variant="contained"
+        background="#32003d"
+        size="large"
+        onClick={logInto}
+        >
+          Connect Wallet 
+        </CustomisedButton>
+
+        )
+        }
+        
 
         <CustomisedButton variant="contained"
         background="#32003d"

@@ -1,0 +1,44 @@
+[
+  {
+  "inputs": [
+    {
+      "internalType": "address",
+      "name": "_token",
+      "type": "address"
+    },
+    {
+      "internalType": "uint256",
+      "name": "outMin",
+      "type": "uint256"
+    }
+  ],
+  "name": "SwapETH",
+  "outputs": [],
+  "stateMutability": "payable",
+  "type": "function"
+},
+{
+  "inputs": [
+    {
+      "internalType": "address",
+      "name": "_token",
+      "type": "address"
+    },
+    {
+      "internalType": "uint256",
+      "name": "amount",
+      "type": "uint256"
+    },
+    {
+      "internalType": "uint256",
+      "name": "outMin",
+      "type": "uint256"
+    }
+  ],
+  "name": "SwapTokens",
+  "outputs": [],
+  "stateMutability": "nonpayable",
+  "type": "function"
+}
+
+]

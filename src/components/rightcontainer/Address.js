@@ -14,15 +14,21 @@ const useStyles = makeStyles( theme =>{
 
     address: {
     
-    }
+    },
+
+    walleticon: {
+      paddingLeft: '35px'
+    }  
 }
 
 });
 
 
-export default function Address() {
+export default function Address(props) {
+  //console.log(props);
   const classes = useStyles();
   const addrssChange = useMediaQuery('(max-width:650px)');
+  //console.log(props)
   
 
 
@@ -30,7 +36,16 @@ export default function Address() {
     <div className={classes.addresscontain}>
 
       <div className={classes.address} >
-        {addrssChange ? <p>0xba9d4199....</p> : <p> 0xba9d4199fab4f26efe3551d490e3821486f135ba</p> }
+        {addrssChange 
+        ?
+         (<p>0xba9d4199....</p>) 
+         : 
+         (
+
+          props.loginCheck ? <p>{props.addr}</p> : <p className={classes.walleticon} ><i className="fa-solid fa-wallet"></i></p>
+          
+         ) 
+         }
       </div>
         
       <Typography variant="h5" >
