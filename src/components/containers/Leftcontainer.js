@@ -131,7 +131,15 @@ const useStyles = makeStyles( theme => {
         alignSelf: 'center',
         width: '87%',
         height: '36px',
-        },
+        "&::-webkit-outer-spin-button, &::-webkit-inner-spin-button": {
+            "-webkit-appearance": "none",
+            display: "none"
+        }
+        
+                },
+
+        
+ 
 
         formtoken: {
             backgroundColor: '#eff0f2',
@@ -159,6 +167,8 @@ export default  function Leftcontainer(props) {
     //const { native } = useMoralisWeb3Api();
     //const contractProcessor = useWeb3ExecuteFunction();
     const [dataresult, changedataresult] = useState({});
+    const [bmPrice, changebmPrice] = useState(0.5);
+    const [sellbmPrice, changesellbmPrice] = useState(0.5);
 
 
 
@@ -169,7 +179,7 @@ export default  function Leftcontainer(props) {
         //useEffect
        useEffect(() => {
         // Update the document title using the browser API
-        console.log(dataresult);
+        //console.log(dataresult);
 
 
 
@@ -179,14 +189,12 @@ export default  function Leftcontainer(props) {
             //fetch({ params: dataresult});
             //await contractProcessor.fetch({ params: dataresult });
             if(Object.keys(dataresult).length === 0) {
-                console.log("first render inside useeffect");
+                //console.log("first render inside useeffect");
             } else {
             const transaction = await Moralis.executeFunction(dataresult);
-            console.log(transaction.hash)
+            //console.log(transaction.hash)
             //console.log(transaction.hash);
-            }
 
-            
             Store.addNotification({
                 title: "Successful",
                 message: "Transaction Successful",
@@ -202,9 +210,28 @@ export default  function Leftcontainer(props) {
                 width: 600
 
               });
+
+              Store.addNotification({
+                title: "TXN HASH",
+                message: transaction.hash,
+                type: "info",
+                container: "bottom-left",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                    duration: 8000,
+                    showIcon: true
+                  },
+                width: 350
+
+              });
               
 
+
+            }
+
             
+               
         }
         
         
@@ -212,6 +239,34 @@ export default  function Leftcontainer(props) {
         fetchdata();
        
       }, [dataresult]);
+
+
+
+
+      const showprice = (e) => {
+        e.preventDefault();
+
+        const input = e.target.value;
+        //console.log(input);
+
+        const tokenRecieved = (input/0.5 * 453);
+        //console.log(tokenRecieved);
+
+        changebmPrice(tokenRecieved);
+
+      }
+
+
+      const sellshowprice = (e) => {
+        e.preventDefault();
+
+        const input = e.target.value;
+
+        const tokenRecieved = (input/0.5 * 453);
+
+        changesellbmPrice(tokenRecieved);
+
+      }
 
 
 
@@ -237,7 +292,7 @@ export default  function Leftcontainer(props) {
             
                 //console.log(options);
                 changedataresult(options);
-                console.log(dataresult);
+                //console.log(dataresult);
         
                 e.target.value.value = "";        
         } else {
@@ -284,7 +339,7 @@ export default  function Leftcontainer(props) {
              e.target.value.value = "";
                  
         } else {
-            
+
             Store.addNotification({
                 title: "Connect Wallet",
                 message: "",
@@ -328,12 +383,12 @@ export default  function Leftcontainer(props) {
                     Token Recieved
                 </Typography> 
                 <Typography variant="body1" >
-                    4,045 BM
+                    {bmPrice} BM
                 </Typography>
             </div>
 
             <form noValidate autoComplete='off'  className={classes.formcontain} onSubmit={buy} >
-            <input name="value" type="number" className={classes.forminput} placeholder="Amount BNB" />
+            <input name="value" type="number" className={classes.forminput} placeholder="Amount BNB" onChange={showprice}/>
 
             <CustomisedButton variant="contained"
                 background="#32003d"
@@ -364,13 +419,13 @@ export default  function Leftcontainer(props) {
                 Token Recieved
             </Typography> 
             <Typography variant="body1" >
-                4,045 BM
+            {sellbmPrice} BM
             </Typography>
             </div>
 
 
             <form noValidate autoComplete='off' className={classes.formcontain} onSubmit={sell}>
-            <input name="value" type="number" className={classes.forminput}  placeholder="Amount Tokens"/>
+            <input name="value" type="number" className={classes.forminput}  placeholder="Amount Tokens" onChange={sellshowprice} />
 
             <CustomisedButton variant="contained"
             background="#32003d"
