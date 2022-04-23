@@ -71,7 +71,7 @@ export const ChartComponent = props => {
 			const chart = createChart(chartContainerRef.current, chartProperties);
 			chart.timeScale().fitContent();
 
-			const newSeries = chart.addCandlestickSeries();
+			const newSeries = chart.addAreaSeries();
 			newSeries.setData(data);
 
 			window.addEventListener('resize', handleResize);

@@ -162,84 +162,14 @@ const useStyles = makeStyles( theme => {
 export default  function Leftcontainer(props) {
     
     const classes = useStyles();
-    //const web3Provider = await Moralis.enableWeb3();
-    //console.log(ABI);
-    //const { native } = useMoralisWeb3Api();
-    //const contractProcessor = useWeb3ExecuteFunction();
-    const [dataresult, changedataresult] = useState({});
-    const [bmPrice, changebmPrice] = useState(0.5);
-    const [sellbmPrice, changesellbmPrice] = useState(0.5);
+    const [bmPrice, changebmPrice] = useState(0.00208);
+    const [sellbmPrice, changesellbmPrice] = useState(0.00208);
+    //console.log(props);
 
 
-
-    //const { fetch, data, error, isLoading } =  useMoralisWeb3ApiCall( native.runContractFunction,{ ...dataresult });
 
   
     
-        //useEffect
-       useEffect(() => {
-        // Update the document title using the browser API
-        //console.log(dataresult);
-
-
-
-        const fetchdata = async () => {
-            
-            const web3 = await Moralis.enableWeb3();
-            //fetch({ params: dataresult});
-            //await contractProcessor.fetch({ params: dataresult });
-            if(Object.keys(dataresult).length === 0) {
-                //console.log("first render inside useeffect");
-            } else {
-            const transaction = await Moralis.executeFunction(dataresult);
-            //console.log(transaction.hash)
-            //console.log(transaction.hash);
-
-            Store.addNotification({
-                title: "Successful",
-                message: "Transaction Successful",
-                type: "success",
-                insert: "top",
-                container: "top-right",
-                animationIn: ["animate__animated", "animate__fadeIn"],
-                animationOut: ["animate__animated", "animate__fadeOut"],
-                dismiss: {
-                  duration: 5000,
-                  onScreen: true
-                },
-                width: 600
-
-              });
-
-              Store.addNotification({
-                title: "TXN HASH",
-                message: transaction.hash,
-                type: "info",
-                container: "bottom-left",
-                animationIn: ["animate__animated", "animate__fadeIn"],
-                animationOut: ["animate__animated", "animate__fadeOut"],
-                dismiss: {
-                    duration: 8000,
-                    showIcon: true
-                  },
-                width: 350
-
-              });
-              
-
-
-            }
-
-            
-               
-        }
-        
-        
-
-        fetchdata();
-       
-      }, [dataresult]);
-
 
 
 
@@ -291,7 +221,7 @@ export default  function Leftcontainer(props) {
 
             
                 //console.log(options);
-                changedataresult(options);
+                props.changedataresult(options);
                 //console.log(dataresult);
         
                 e.target.value.value = "";        
@@ -324,7 +254,7 @@ export default  function Leftcontainer(props) {
 
     const sell = (e) => {
         e.preventDefault();
-        console.log(e.target.value.value);
+        //console.log(e.target.value.value);
         const amount = e.target.value.value;
 
         if(props.loginCheck){
@@ -335,7 +265,7 @@ export default  function Leftcontainer(props) {
                 params: { _token: props.addr, amount: amount },
                 };
 
-             changedataresult(options);
+             props.changedataresult(options);
              e.target.value.value = "";
                  
         } else {
@@ -359,6 +289,11 @@ export default  function Leftcontainer(props) {
         }
          
         }
+
+
+
+
+
     
    
 

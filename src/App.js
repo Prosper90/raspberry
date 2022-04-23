@@ -6,6 +6,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import logo from "./img/RaspberrySwap_logo.png";
 import { ReactNotifications } from 'react-notifications-component';
 import 'react-notifications-component/dist/theme.css';
+import SearchedToken from "./components/searchedtoken/SearchedToken.js";
+import { useParams } from 'react-router-dom';
 
 
 
@@ -46,6 +48,7 @@ const useStyles = makeStyles( theme => {
 function App() {
   const classes = useStyles();
 
+
   return (
    <Router>
      <Switch>
@@ -58,6 +61,7 @@ function App() {
           <Mainpage exact path="/" />
         </Container>
        </Route>
+       <Route exact path="/:token" component={Mainpage}/>
      </Switch>
    </Router>
   );

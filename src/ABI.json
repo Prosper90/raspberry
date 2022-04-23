@@ -39,6 +39,77 @@
   "outputs": [],
   "stateMutability": "nonpayable",
   "type": "function"
+},
+{
+  "inputs": [
+    {
+      "internalType": "address",
+      "name": "tokenAddress",
+      "type": "address"
+    }
+  ],
+  "name": "AvailableTokens",
+  "outputs": [
+    {
+      "internalType": "address",
+      "name": "Token",
+      "type": "address"
+    },
+    {
+      "internalType": "address",
+      "name": "router",
+      "type": "address"
+    },
+    {
+      "internalType": "uint16",
+      "name": "SellTax",
+      "type": "uint16"
+    },
+    {
+      "internalType": "uint16",
+      "name": "BuyTax",
+      "type": "uint16"
+    },
+    {
+      "internalType": "uint16",
+      "name": "LPTax",
+      "type": "uint16"
+    },
+    {
+      "internalType": "uint16",
+      "name": "BurnTax",
+      "type": "uint16"
+    },
+    {
+      "internalType": "uint16",
+      "name": "WalletTax1",
+      "type": "uint16"
+    },
+    {
+      "internalType": "uint16",
+      "name": "WalletTax2",
+      "type": "uint16"
+    },
+    {
+      "internalType": "address",
+      "name": "BurnWallet",
+      "type": "address"
+    },
+    {
+      "internalType": "address",
+      "name": "Wallet1",
+      "type": "address"
+    },
+    {
+      "internalType": "address",
+      "name": "Wallet2",
+      "type": "address"
+    }
+  ],
+  "stateMutability": "view",
+  "type": "function"
 }
+
+
 
 ]
