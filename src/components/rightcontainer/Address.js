@@ -5,7 +5,6 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import InputBase from '@material-ui/core/InputBase';
 import { Link } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
-import ABI from '../../ABI.json';
 import truncateAddress from 'truncate-eth-address'
 
 
@@ -73,7 +72,7 @@ export default function Address(props) {
   const search = (e) => {
     e.preventDefault();
     const tokenSearched = (e.target.value.value);
-    console.log(e.target.value.value);
+    //console.log(e.target.value.value);
     
       history.push({ pathname:`/${tokenSearched}`, state: { address: tokenSearched }});
       

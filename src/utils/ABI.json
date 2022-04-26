@@ -1,0 +1,462 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "ETHIn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "TokenOut",
+        "type": "uint256"
+      }
+    ],
+    "name": "OnSwapETH",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "Token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "TokenIn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "BNBOut",
+        "type": "uint256"
+      }
+    ],
+    "name": "onSwapTokens",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "AvailableTokens",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "Token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "router",
+        "type": "address"
+      },
+      {
+        "internalType": "uint16",
+        "name": "SellTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "BuyTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "LPTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "BurnTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "WalletTax1",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "WalletTax2",
+        "type": "uint16"
+      },
+      {
+        "internalType": "address",
+        "name": "BurnWallet",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "Wallet1",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "Wallet2",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "burnWallet",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "Wallet1",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "Wallet2",
+        "type": "address"
+      }
+    ],
+    "name": "ChangeWallets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "Token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "router",
+        "type": "address"
+      },
+      {
+        "internalType": "uint16",
+        "name": "sellTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "buyTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "LPTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "burnTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "wallet1Tax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "wallet2Tax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "address",
+        "name": "burnWallet",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "wallet1",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "wallet2",
+        "type": "address"
+      }
+    ],
+    "name": "ListToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "MetadataOfToken",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "Metadata",
+        "type": "string"
+      }
+    ],
+    "name": "SetMetadata",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint16",
+        "name": "SellTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "BuyTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "LPTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "BurnTax",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "WalletTax1",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "WalletTax2",
+        "type": "uint16"
+      }
+    ],
+    "name": "SetTaxes",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "outMin",
+        "type": "uint256"
+      }
+    ],
+    "name": "SwapETH",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "outMin",
+        "type": "uint256"
+      }
+    ],
+    "name": "SwapTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "UnlistToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "getETHAmountOut",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountOut",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTokenAmountOut",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountOut",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
+  }
+]

@@ -4,12 +4,12 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { styled } from '@material-ui/core/styles';
 //import { useMoralisWeb3Api, useMoralisWeb3ApiCall } from "react-moralis";
-import ABI from '../../ABI.json';
-import  { Moralis } from 'moralis';
 //import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
 import { Store } from 'react-notifications-component';
 // preferred way to import (from `v4`). Uses `animate__` prefix.
 import 'animate.css/animate.min.css';
+import { ethers } from "ethers";
+const { ethereum } = window;
 
 
 
@@ -58,6 +58,46 @@ const CustomisedButton = styled(Button)({
     },
     
   });
+
+
+
+  const CustomisedButtonMax = styled(Button)({
+    boxShadow: 'none',
+    textTransform: 'none',
+    fontSize: 16,
+    border: '1px solid',
+    color: '#fff3ff',
+    width: '10%;',
+    height: '100%',
+    lineHeight: 1.5,
+    backgroundColor: '#78006e',
+    borderColor: '#78006e',
+    fontFamily: [
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
+    ].join(','),
+    '&:hover': {
+      backgroundColor: '#6c0063',
+      borderColor: '#6c0063',
+      boxShadow: 'none',
+    },
+    '&:active': {
+      boxShadow: 'none',
+      border: 'none',
+      backgroundColor: '#6c0063',
+      borderColor: '#6c0063',
+    },
+    
+  });
+
 
 
 
@@ -137,6 +177,22 @@ const useStyles = makeStyles( theme => {
         }
         
                 },
+    
+        forminputtwo: {
+            backgroundColor: '#eff0f2',
+            border: 'none',
+            textAlign: 'center',
+            borderBottomLeftRadius: '18px',
+            borderTopLeftRadius: '18px',
+            alignSelf: 'center',
+            width: '87%',
+            height: '36px',
+            "&::-webkit-outer-spin-button, &::-webkit-inner-spin-button": {
+                "-webkit-appearance": "none",
+                display: "none"
+            }
+            
+                    },
 
         
  
@@ -149,7 +205,15 @@ const useStyles = makeStyles( theme => {
             alignSelf: 'center',
             width: '57%',
             height: '24px',
-            }
+            },
+
+        
+        containmaxsell: {
+            display: 'flex',
+            width: '87%',
+            alignItems: 'center',
+            justifyContent: 'center'
+        }
     }
   });
 
@@ -162,69 +226,113 @@ const useStyles = makeStyles( theme => {
 export default  function Leftcontainer(props) {
     
     const classes = useStyles();
-    const [bmPrice, changebmPrice] = useState(0.00208);
-    const [sellbmPrice, changesellbmPrice] = useState(0.00208);
-    //console.log(props);
+    //console.log(props.allowance);
+    //console.log(props.tokenIn);
 
 
 
-  
-    
 
 
-
-      const showprice = (e) => {
+    const tokenRecieved = async (e) => {
         e.preventDefault();
+        const amount = e.target.value;
+        //console.log(amount);
 
-        const input = e.target.value;
-        //console.log(input);
+        if ( amount === "0" || !amount) {
+            props.setTokenOut("0");
+            return;
+        }
 
-        const tokenRecieved = (input/0.5 * 453);
-        //console.log(tokenRecieved);
+        const contract = props.getContract();
 
-        changebmPrice(tokenRecieved);
+        const weiAmount = String(ethers.utils.parseUnits( amount, "18" ));
+        props.setBNBIn(weiAmount);
+        props.setTokenOut(String(await contract.getTokenAmountOut(String(props.tokenContract), weiAmount)));
 
-      }
+    }
 
 
-      const sellshowprice = (e) => {
+
+    const BNBRecieved = async (e) => {
         e.preventDefault();
+        const amount = e.target.value;
+        //console.log(amount);
 
-        const input = e.target.value;
+        if (amount === "0" || !amount) {
+            props.setBNBOut("0");
+            return;
+        }
+        const contract = props.getContract();
+        const decimalAmount = String(Number(String(amount) * 10 ** props.tokenDecimals));
+        props.setTokenIn(decimalAmount);
+        const ETHOut = await contract.getETHAmountOut(String(props.tokenContract), decimalAmount);
+        props.setBNBOut(String(ETHOut));
 
-        const tokenRecieved = (input/0.5 * 453);
+        if (!props.allowance || props.allowance < decimalAmount) await props.checkAllowance(props.theAddress, props.tokenContract);
 
-        changesellbmPrice(tokenRecieved);
 
-      }
-
+    }
 
 
 
 
 
 
-    const buy = (e) => {
+    const buy = async (e) => {
         e.preventDefault();
 
         //console.log(e.target.value.value);
         const amount = e.target.value.value;
+
         
         if(props.loginCheck){
-            
-            const options = {
-                contractAddress: "0xf8be69da3ef92fb896b9bb71218f401ae8c8922b",
-                functionName: "SwapETH",
-                abi: ABI,
-                params: { _token: props.addr, outMin: amount},
-                };
 
-            
-                //console.log(options);
-                props.changedataresult(options);
-                //console.log(dataresult);
+            if (props.tokenDecimals.length === 0) {
+                alert("No token defined");
+                return;
+            }
+            const contract = props.getContract()
+            const tokenOutSlippage = String(Number(props.tokenOut) * Number(99) / Number(100));
+            const transactionHash = await contract.SwapETH(props.tokenContract, tokenOutSlippage, { value: props.BNBIn });
+
+            //console.log("transacting");
+            await transactionHash.wait();
+            //console.log("finished");
+
+            Store.addNotification({
+                title: "Successful",
+                message: "Transaction Successful",
+                type: "success",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                  duration: 5000,
+                  onScreen: true
+                },
+                width: 600
+      
+              });
+      
+              Store.addNotification({
+                title: "TXN HASH",
+                message: "transaction.hash",
+                type: "info",
+                container: "bottom-left",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                    duration: 15000,
+                    showIcon: true
+                  },
+                width: 350
+      
+              });
+            //console.log(`Success - ${transactionHash.hash}`);
+            //setLoading(false);
+            e.target.value.value = "";
         
-                e.target.value.value = "";        
         } else {
 
 
@@ -252,20 +360,59 @@ export default  function Leftcontainer(props) {
     }
 
 
-    const sell = (e) => {
+    const sell = async (e) => {
         e.preventDefault();
         //console.log(e.target.value.value);
         const amount = e.target.value.value;
 
-        if(props.loginCheck){
-            const options = {
-                contractAddress: "0x7b88c05BD672e0291f3674F4a0AACe2fe0dd2ed9",
-                functionName: "SwapTokens",
-                abi: ABI,
-                params: { _token: props.addr, amount: amount },
-                };
 
-             props.changedataresult(options);
+        if(props.loginCheck){
+         
+            if (props.tokenDecimals.length === 0) {
+                alert("No token defined");
+                return;
+            }
+            const contract = props.getContract()
+            const TokenContract = props.getTokenContract(props.tokenContract);
+            const BNBOutSlippage = String(Number(props.BNBOut) * Number(99) / Number(100));
+            const transactionHash = await contract.SwapTokens(props.tokenContract, props.tokenIn, BNBOutSlippage);
+            //setLoading(true);
+            await transactionHash.wait();
+            //setLoading(false);
+
+            Store.addNotification({
+                title: "Successful",
+                message: "Transaction Successful",
+                type: "success",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                  duration: 5000,
+                  onScreen: true
+                },
+                width: 600
+      
+              });
+      
+              Store.addNotification({
+                title: "TXN HASH",
+                message: "transaction.hash",
+                type: "info",
+                container: "bottom-left",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                    duration: 15000,
+                    showIcon: true
+                  },
+                width: 350
+      
+              });
+
+            //console.log(`Success - ${transactionHash.hash}`);
+            //setIsLoading(false);
              e.target.value.value = "";
                  
         } else {
@@ -292,6 +439,57 @@ export default  function Leftcontainer(props) {
 
 
 
+    
+        
+
+      
+        const approve = async() => {
+            const contract = props.getTokenContract(props.tokenContract)
+            const allowanceAmount = String(Number(2) ** Number(256) - Number(1));
+            const transactionHash = await contract.approve(props.contractAddress, allowanceAmount);
+            //setIsLoading(true);
+            //console.log(`Loading - ${transactionHash.hash}`);
+            await transactionHash.wait();
+            props.setAllowance(allowanceAmount);
+            //console.log(`Success - ${transactionHash.hash}`);
+            //setIsLoading(false);
+        }
+
+
+
+
+        const updateToken = async (value) => {
+            if (value === "0" || !value) {
+                props.setBNBOut("0");
+                return;
+            }
+            const contract = props.getContract();
+            const decimalAmount = String(Number(String(value) * 10 ** props.tokenDecimals));
+            props.setTokenIn(decimalAmount);
+            const ETHOut = await contract.getETHAmountOut(String(props.tokenContract), decimalAmount);
+            props.setBNBOut(String(ETHOut));
+    
+            if (!props.allowance || props.allowance < decimalAmount) await props.checkAllowance(props.theAddress, props.tokenContract);
+        }
+
+
+
+
+        const setMaxTokens = async () => {
+
+            await props.updateAccount();
+            const value = String(props.accountToken / 10 ** props.tokenDecimals);
+            await updateToken(value);
+            props.setTokenIn(props.accountToken);
+            const element = document.getElementsByName("value")[0];
+            //console.log(element);
+            element.value = value;
+            //console.log(document);
+            //.setAttribute("value", accountToken);
+        }
+
+
+
 
 
     
@@ -300,7 +498,7 @@ export default  function Leftcontainer(props) {
   return (
     <div className={classes.background}  >
         <div className={classes.taxInfo}>
-          Tax:Buy 10% Sell 20%  <i className="fa-brands fa-android"></i>
+          Tax : Buy{props.buyFee / 100}% Sell {props.sellFee / 100}%  <i className="fa-brands fa-android"></i>
         </div>
         
         <div className={classes.formone}>
@@ -310,7 +508,7 @@ export default  function Leftcontainer(props) {
                     Price/BNB
                 </Typography> : 
                 <Typography variant="body1" >
-                    40059.004504
+                    {props.accountBNB / 10 ** 18 }
                 </Typography>
             </div>
             <div className={classes.pricehold}>
@@ -318,12 +516,12 @@ export default  function Leftcontainer(props) {
                     Token Recieved
                 </Typography> 
                 <Typography variant="body1" >
-                    {bmPrice} BM
+                {props.tokenOut / 10 ** props.tokenDecimals} {props.tokenName} 
                 </Typography>
             </div>
 
             <form noValidate autoComplete='off'  className={classes.formcontain} onSubmit={buy} >
-            <input name="value" type="number" className={classes.forminput} placeholder="Amount BNB" onChange={showprice}/>
+            <input name="value" type="number" className={classes.forminput} placeholder="Amount BNB" onChange={tokenRecieved}/>
 
             <CustomisedButton variant="contained"
                 background="#32003d"
@@ -346,7 +544,7 @@ export default  function Leftcontainer(props) {
                 Price/BNB
             </Typography> : 
             <Typography variant="body1" >
-                40059.004504
+               {props.accountBNB / 10 ** 18 }
             </Typography>
             </div>
             <div className={classes.pricehold}>
@@ -354,21 +552,49 @@ export default  function Leftcontainer(props) {
                 Token Recieved
             </Typography> 
             <Typography variant="body1" >
-            {sellbmPrice} BM
+               {props.BNBOut / 10 ** 18} BNB
             </Typography>
             </div>
 
 
             <form noValidate autoComplete='off' className={classes.formcontain} onSubmit={sell}>
-            <input name="value" type="number" className={classes.forminput}  placeholder="Amount Tokens" onChange={sellshowprice} />
+                <div  className={classes.containmaxsell}>
+                    <input name="value" type="number" className={classes.forminputtwo}  placeholder="Amount Tokens"  onChange={BNBRecieved} />
+                        <CustomisedButtonMax variant="contained"
+                            background="#32003d"
+                            size="small"
+                            onClick={setMaxTokens}
+                            >
+                            MAX
+                        </CustomisedButtonMax>
+                </div>
 
-            <CustomisedButton variant="contained"
-            background="#32003d"
-            size="large"
-            type="submit"
-            >
-            SELL
-            </CustomisedButton>
+             
+             {  Number(props.allowance.length) >= Number(props.tokenIn.length) ? (
+
+                <CustomisedButton variant="contained"
+                background="#32003d"
+                size="large"
+                type="submit"
+                >
+                SELL
+                </CustomisedButton>
+
+             ) : (
+
+
+                <CustomisedButton variant="contained"
+                background="#32003d"
+                size="large"
+                onClick={approve}
+                >
+                Approve
+                </CustomisedButton>
+ 
+
+             )}
+            
+
             </form>
             </div>
 

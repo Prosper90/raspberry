@@ -4,7 +4,6 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { styled } from '@material-ui/core/styles';
 //import { useMoralisWeb3Api, useMoralisWeb3ApiCall } from "react-moralis";
-import ABI from '../../ABI.json';
 import  { Moralis } from 'moralis';
 //import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
 import { Store } from 'react-notifications-component';
