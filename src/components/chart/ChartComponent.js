@@ -34,9 +34,11 @@ export const ChartComponent = props => {
 			const handleResize = () => {
 				chart.applyOptions({ 
                     width: chartContainerRef.current.clientWidth,
-                    height: chartContainerRef.current.clientHeight    
-                });
+                    height: chartContainerRef.current.clientHeight
+                  });
 			};
+
+
 			const { data } = props;
 
 
@@ -71,7 +73,15 @@ export const ChartComponent = props => {
 			const chart = createChart(chartContainerRef.current, chartProperties);
 			chart.timeScale().fitContent();
 
-			const newSeries = chart.addAreaSeries();
+			const newSeries = chart.addLineSeries({
+          priceFormat: {
+            type: 'price',
+            precision: 6,
+            minMove: 0.000001,
+          }
+      });
+
+      //console.log(data);
 			newSeries.setData(data);
 
 			window.addEventListener('resize', handleResize);

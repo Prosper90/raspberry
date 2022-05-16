@@ -58,21 +58,19 @@ const useStyles = makeStyles({
 
 export default function Connectwallet(props) {
   const classes = useStyles();
- 
+  console.log(props);
 
 
 
   const logInto = () => {
     props.login()
-    //console.log("login called");
     props.changeloginValue(true); //changeLoginStat(false); 
+    //console.log("clicked");
   }
 
 
   const logOutOf = () => {
-    props.logout()
-    //console.log("logout called");
-    props.changeloginValue(false);  //changeLoginStat(true)
+    console.log("connected clicked");
   }
 
 
@@ -86,7 +84,7 @@ export default function Connectwallet(props) {
         size="large"
         onClick={logOutOf}
         >
-          Logout
+          Connected
         </CustomisedButton>
         )
         :

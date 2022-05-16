@@ -18,9 +18,9 @@ import { useHistory } from 'react-router-dom';
 import { useMoralisWeb3Api } from "react-moralis";
 import moment from 'moment';
 import { ethers } from "ethers";
-import { contractABI, tokenABI, contractAddress, chainID } from "../utils/constants";
-const { ethereum } = window;
-const provider = new ethers.providers.Web3Provider(window.ethereum);
+import { contractABI, tokenABI, contractAddress, chainID, pancakeRouter, pancakeABIuse } from "../utils/constants";
+import axios from 'axios';
+
 
 
 
@@ -77,7 +77,8 @@ const theme = createTheme({
 
 export default function Mainpage(props) {
     const classes = useStyles();
-    const addrssChange = useMediaQuery('(max-width:650px)');
+    const WidthChange = useMediaQuery('(max-width:959px)');
+    //console.log(WidthChange);
     let [theAddress, setTheAddress] = useState();
     const [checkLoginStat, changeLoginStat] = useState(false);
     const [searchToken, setsearchToken] = useState({});
@@ -98,6 +99,9 @@ export default function Mainpage(props) {
     const [tokenIn, setTokenIn] = useState("0");
     const [BNBOut, setBNBOut] = useState("0");
     const [BNBIn, setBNBIn] = useState("0");
+    const [searchChanged, setsearchChanged] = useState();
+    const [executed, setExecuted] = useState(false);
+    let [loading, setLoading] = useState(false);
 
     
     const Web3Api = useMoralisWeb3Api();
@@ -107,6 +111,18 @@ export default function Mainpage(props) {
     const { token } = {
       token: match?.params.token,
     };
+
+    const { ethereum } = window;
+    let provider; 
+    
+    if(!window.ethereum){
+     //console.log('Install metamask');
+      // metamask is not connected
+      //checkIfWalletIsConnect();
+           
+    } else {
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+    }
 
    const [searchTest, setsearchTest] = useState();
    Moralis.start({ serverUrl : process.env.REACT_APP_serverUrl, appId : process.env.REACT_APP_appId });
@@ -130,12 +146,14 @@ export default function Mainpage(props) {
       //searches for token and gets appropraite info about it for buying and selling to happen
       const changeToken = async (address) => {
         setTokenContract(address);
+        setLoading(true);
         if (!ethers.utils.isAddress(address)) {
             setListed(false);
             setTokenName("");
             setTokenDecimals("");
             setBuyFee("0");
             setSellFee("0");
+            setLoading(false)
             return;
         }
         const Token = getTokenContract(address);
@@ -154,12 +172,15 @@ export default function Mainpage(props) {
             if (theAddress) {
                 checkAllowance(theAddress, address);
             }
+            setLoading(false);
         }
         else {
             setTokenName(await Token.name());
             setBuyFee("0");
             setSellFee("0");
+            setLoading(false);
         }
+
      }
 
 
@@ -176,55 +197,52 @@ export default function Mainpage(props) {
 
     //useeffect
     useEffect(() => {
-    //console.log("useeffect called");
-    //for chart
-    if(blockArray.length === 0){
-      //console.log("fetch array called");
-      fetchDataCharts();
-      //console.log(blockArray);
-    };
-
-    if(blockArray.length !== 0) {
-      //console.log("price called");
-      fetchDataChartsPrice();
-      //console.log(priceArray);
-    } 
       
-      //console.log(priceArray);
+    //for chart
+      if(blockArray.length === 0){
+        fetchDataCharts();
+      };
+
+      if(blockArray.length !== 0) {
+        fetchDataChartsPrice(); 
+      };
+
+
       if(priceArray.length !== 0) {
         let iniValue = [];
-        //console.log("running inside code")
       dates.map((data, a) => {
        priceArray.map((e, i) => {
          
          if(a === i){
-          //console.log(data, e);
-          iniValue.push({time: data, value: e});
+          const dateString = `${data}`;
+          iniValue.push({time: dateString, value: e  });
         }  
        });
      });  
     
-     //console.log(iniValue)
-     setinitialData(iniValue);
-     //console.log(initialData);
+     //setinitialData(iniValue);
 
      }
+
+     //console.log(initialData);
     
 
 
 
-    // for buying and selling
+    // for searching listed tokens
     const fetchdata = async () => {
      
      if(  token &&  !searchTest ){
       //console.log("direct call called");
       changeToken(token);
+      //console.log(token);
 
      } else if ( token  &&  searchTest ){
       // const transaction = await Moralis.executeFunction(searchToken);
        //settokenData(transaction);
        //console.log("in-direct call called");
        changeToken(searchTest);
+       //console.log(searchTest);
 
      }
 
@@ -232,7 +250,7 @@ export default function Mainpage(props) {
      }
 
     fetchdata();
-    }, [searchToken,  blockArray, priceArray, searchTest]);
+    }, [searchToken,  blockArray, priceArray, searchTest, searchChanged]);
 
 
     //second useEffect to check if account is connected
@@ -244,7 +262,8 @@ export default function Mainpage(props) {
    //third useEffect to check if account is connected
   useEffect(() => {
     checkIfWalletIsConnect();
-  })
+    login();
+  }, [executed]);
 
 
 
@@ -263,6 +282,7 @@ export default function Mainpage(props) {
       } */
       //console.log("Location called");
       //console.log(location.state.address);
+      //console.log(tokenSlashRemoved)
       setsearchTest(location.state.address);
       //changeToken(tokenSlashRemoved);
     });
@@ -273,15 +293,69 @@ export default function Mainpage(props) {
 
 
     const checkIfWalletIsConnect = async () => {
-      if (!ethereum) return alert("Please install MetaMask.");
-      const chainId = await provider.getNetwork();
-      if (chainId.chainId != chainID) return alert("WrongChain");
-      const accounts = await ethereum.request({ method: "eth_accounts" });
-      setTheAddress(accounts[0]);
-      changeLoginStat(true);
-      //setCurrentAccount(accounts[0]);
 
-      }
+
+       const isMetaMaskConnected = async () => {
+            const accounts = await provider.listAccounts();
+            return accounts.length > 0;
+        }
+        
+          await isMetaMaskConnected().then( async (connected) => {
+            if (connected) {
+                // metamask is connected
+                const chainId = await provider.getNetwork();
+                //console.log(chainId.chainId);
+               //console.log(chainID)
+                //handle chain issues
+                if (chainId.chainId !== chainID){
+                  //alert("WrongChain");
+          
+                  try {
+                     
+                    //console.log("entered one");
+                    await window.ethereum.request({
+                      method: "wallet_switchEthereumChain",
+                      params: [{
+                          chainId: `0x${Number(97).toString(16)}`,
+                      }]
+                    });
+
+                    setExecuted(true);
+                    
+                  } catch (error) {
+                    
+                    if(error === 4902 ){
+                      //console.log("entered two");
+                    await window.ethereum.request({
+                      method: "wallet_addEthereumChain",
+                      params: [{
+                          chainId: `0x${Number(97).toString(16)}`,
+                          rpcUrls: [" https://data-seed-prebsc-1-s1.binance.org:8545"],
+                          chainName: "BSC testnet",
+                          nativeCurrency: {
+                              name: "BSC",
+                              symbol: "BNB",
+                              decimals: 18                          
+                            },
+                          blockExplorerUrls: ["https://explorer.binance.org/smart-testnet"]
+                      }]
+                    });
+                  
+                  }
+                    
+                  }
+          
+          
+          
+                } else {
+                  
+                }
+          
+
+            }
+        });
+
+    }
 
 
     const updateAccount = async () => {
@@ -312,61 +386,69 @@ export default function Mainpage(props) {
 
       
     //Login code
+    
     const login = async () => {
 
-          try {
-            if (!ethereum) return alert("Please install MetaMask.");
-            const chainId = await provider.getNetwork();
-            if (chainId.chainId != chainID) return alert("WrongChain");
-            const accounts = await ethereum.request({ method: "eth_requestAccounts", });
-            //console.log(accounts);
-            setTheAddress(accounts[0]);
-            changeLoginStat(true);
-            //setCurrentAccount(accounts[0]);
-            // window.location.reload();
 
-            Store.addNotification({
-              title: "Wallet Connected",
-              message: "",
-              type: "success",
-              insert: "top",
-              container: "top-right",
-              animationIn: ["animate__animated", "animate__fadeIn"],
-              animationOut: ["animate__animated", "animate__fadeOut"],
-              dismiss: {
-                duration: 2000,
-                onScreen: true
-              },
-              width: 600
-  
-            });
+          if(executed === false){  
+              //console.log("Please install MetaMask. error 1") 
+              //console.log("executed");
+
+              //console.log("ran here");
+              Store.addNotification({
+                title: "Install metamask",
+                message: "",
+                type: "warning",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                  duration: 1000,
+                  onScreen: true
+                },
+                width: 400
+    
+              });
 
 
-            } catch (error) {
-                //console.log(error);
-                throw new Error("No ethereum object");
-            }
+           } else if(executed === true) { 
+               //console.log("executed two");
+              const chainId = await provider.getNetwork();
+                    //handle chain issues
 
-          
+
+              const accounts = await ethereum.request({ method: "eth_requestAccounts", });
+              //console.log(accounts);
+             
+
+              setTheAddress(accounts[0]);
+              changeLoginStat(true);
+              //setCurrentAccount(accounts[0]);
+              // window.location.reload();
+            
+              Store.addNotification({
+                title: "Wallet Connected",
+                message: "",
+                type: "success",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                  duration: 1000,
+                  onScreen: true
+                },
+                width: 400
+    
+              });
+         
+           }
 
         }
 
 
   
-  
-
-
-  //logout code
-  /*
-  const logOut = async () => {
-    await logout();
-    console.log("logged out");
-  }
-  */
-
-  //console.log(user);
-
-
 
 
 
@@ -378,7 +460,7 @@ export default function Mainpage(props) {
   //console.log(moment());
 
  //get particular date
- const dates = new Array(7).fill().map((e, i) => {
+ const dates = new Array(8).fill().map((e, i) => {
   return moment().subtract(i, "d").format("YYYY-MM-DD");
 }).reverse();
 
@@ -390,9 +472,11 @@ export default function Mainpage(props) {
 
    //get  date to block
   const fetchDataCharts = async () => {
-     
-    //const putArray = [];
 
+    //let url = "https://cryptocurrency-ohlcv-and-vwap.p.rapidapi.com/metrics/ohlcv";
+
+    //const putArray = [];
+    
     let putArray = await Promise.all(dates.map( async (e, i) => {
           //console.log("happy");
           const options = { chain: "bsc", date: e};
@@ -403,7 +487,9 @@ export default function Mainpage(props) {
         )
 
         //console.log(putArray);
-        setblockArray(putArray)        
+        setblockArray(putArray);
+    
+      
   };
   //console.log(blockArray);
 
@@ -416,9 +502,13 @@ export default function Mainpage(props) {
     let addressToLookUp;
 
     if( token &&  !searchTest ){
+      //console.log(token);
       addressToLookUp = token;
+      setsearchChanged(token);
     } else if(token  &&  searchTest){
+      //console.log(searchTest);
       addressToLookUp = searchTest;
+      setsearchChanged(searchTest);
     } else {
       addressToLookUp = "0x97c6825e6911578A515B11e25B552Ecd5fE58dbA";
     }
@@ -426,8 +516,6 @@ export default function Mainpage(props) {
 
       if(blockArray.length !== 0){
         
-
-
         let prices = await Promise.all(blockArray.map( async (data) => {
            //console.log("Token price called first");
            //console.log(data.block);
@@ -442,20 +530,14 @@ export default function Mainpage(props) {
 
           }))
 
-         //pricearr =  prices;
-         //console.log(prices);
          prices = prices.map(e => e.usdPrice);
+         //console.log("priceArray called");
          setpriceArray(prices);
+         //console.log(priceArray);
 
-     
-
-        //console.log(pricearr);
-        //pricearr.push(prices);
-        
-
+      
       };
 
-      //console.log(pricearr);
         
           
   };
@@ -477,6 +559,15 @@ export default function Mainpage(props) {
         <Grid container spacing={2} className={classes.contain} >
 
         <Grid item  xs={12} md={4} lg={4} >
+        { WidthChange ? 
+                    <Address  
+                    addr={theAddress} 
+                    loginCheck={checkLoginStat}
+                    tokenName={tokenName}
+                    /> :
+                    <div></div>
+        }
+
           <Leftcontainer 
             buyFee={buyFee}
             sellFee={sellFee}
@@ -502,22 +593,57 @@ export default function Mainpage(props) {
             accountToken={accountToken}
             getTokenContract={getTokenContract}
             tokenIn={tokenIn}
+            checkAllowance={checkAllowance}
+            loading={loading}
             /> 
         </Grid>
 
         <Grid item  xs={12} md={8} lg={8}  className={classes.rightcontainer}>
+          
+          {!WidthChange ? 
 
-          <Address  
-          addr={theAddress} 
-          loginCheck={checkLoginStat}
-          />
+            <Address  
+            addr={theAddress} 
+            loginCheck={checkLoginStat}
+            tokenName={tokenName}
+            /> 
+
+            :
+
+             <div></div>
+
+          }
+
+          {WidthChange ? 
+
+            <Connectwallet login={login}  
+            loginCheck={checkLoginStat} 
+            changeloginValue={changeLoginStat} 
+            />
+
+          :
+
+          <div></div>
+
+          }
+
 
           <Rightcontainer   initialData={initialData} />
 
-          <Connectwallet login={login}  
-          loginCheck={checkLoginStat} 
-          changeloginValue={changeLoginStat} 
-          />
+            {!WidthChange ? 
+
+            
+              <Connectwallet login={login}  
+              loginCheck={checkLoginStat} 
+              changeloginValue={changeLoginStat} 
+              />
+
+            :
+            <div></div>
+
+
+            
+            }
 
         </Grid>
             

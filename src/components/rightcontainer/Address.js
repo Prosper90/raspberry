@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import InputBase from '@material-ui/core/InputBase';
 import { Link } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
-import truncateAddress from 'truncate-eth-address'
 
 
 
@@ -18,7 +17,12 @@ const useStyles = makeStyles( theme =>{
     },
 
     address: {
-    
+      width: '20%',
+    },
+
+    formButton: {
+      backgroundColor: '#fff',
+      border: 'none'
     },
 
     walleticon: {
@@ -27,17 +31,17 @@ const useStyles = makeStyles( theme =>{
 
 
     inputInput: {
-      paddingTop: theme.spacing.unit,
-      paddingRight: theme.spacing.unit,
-      paddingBottom: theme.spacing.unit,
-      paddingLeft: theme.spacing.unit * 10,
       transition: theme.transitions.create('width'),
-      width: '50%',
-      height: '10px',
+      width: '100%',
+      height: '',
       border: '1px solid #fff',
       color: '#fff',
-      [theme.breakpoints.up('md')]: {
-        width: 200,
+      border: 'none',
+      outline:'none',
+      borderRadius: '15px',
+      color: '#000',
+      [theme.breakpoints.up('xs')]: {
+        width: '225px',
       },
     },
 
@@ -45,17 +49,60 @@ const useStyles = makeStyles( theme =>{
     holdsearchcontain: {
       display: 'flex',
       justifyContent: 'space-around',
-      width: '70%',
+      width: '100%',
       flexWrap: 'wrap'
     },
 
+    formContain: {
+      display: 'flex',
+      width: '41%',
+      height: '18px',
+      backgroundColor: '#fff',
+      padding: '8px',
+      borderRadius: '4px',
+      justifyContent: 'center',
+      transition: 'all 0.5s',
+      transitionTimingFunction: 'ease-in',
+      alignItems: 'center',
+      [theme.breakpoints.up('md')]: {
+        marginBottom: '5px',
+      },
+      [theme.breakpoints.up('xs')]: {
+        width: '20%',
+        height: '18px',
+      }
+    },
+
+    inputExpanded: {
+      display: 'flex',
+      width: '67%',
+      height: '18px',
+      backgroundColor: '#fff',
+      padding: '8px',
+      borderRadius: '4px',
+      justifyContent: 'center',
+      alignItems: 'center',
+      transition: 'all 0.5s',
+      transitionTimingFunction: 'ease-out',
+      [theme.breakpoints.up('md')]: {
+        marginBottom: '5px',
+      },
+      [theme.breakpoints.up('xs')]: {
+        width: '47%',
+        height: '18px',
+      }
+    },
+
+
     truncate: {
-      width: '180px',
+      width: '132px',
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       color: '#fff'
-    }
+    },
+
+
 }
 
 });
@@ -66,6 +113,8 @@ export default function Address(props) {
   const classes = useStyles();
   const addrssChange = useMediaQuery('(max-width:650px)');
   const history = useHistory();
+
+  const[expandInput, setexpandInput] = useState(false);
 
 
 
@@ -96,19 +145,20 @@ export default function Address(props) {
       </div>
         
       <div  className={classes.holdsearchcontain}>
-        <form noValidate autoComplete='off'  onSubmit={search}>
+        <form noValidate autoComplete='off'  className={ expandInput ? classes.inputExpanded : classes.formContain } onSubmit={search} >
         <InputBase
                 placeholder="Search Token…"
-                classes={{
-                  root: classes.inputRoot,
-                  input: classes.inputInput,
-                }}
+                classes={ classes.inputInput }
+                onClick={() => setexpandInput(true)}
+                onBlur={() => setexpandInput(false)}
                 name="value"
               />
-            <button type="submit"><i className="fa-solid fa-magnifying-glass"></i></button>
+            <button className={classes.formButton}  type="submit"><i className="fa-solid fa-magnifying-glass"></i></button>
        </form>
 
-        <Typography variant="h5">BurningMoon</Typography>
+       {props.tokenName ? <Typography variant="h6"> {props.tokenName} </Typography> : <Typography variant="h6"> BurningMoon </Typography> }
+
+        
       </div>
 
     </div>

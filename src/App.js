@@ -57,7 +57,7 @@ function App() {
          <img src={logo} style={imgresponsive} alt="logo-img" />
        </div>
        <ReactNotifications />
-       <Container  className={classes.containbody} >
+         <Container  className={classes.containbody} >
           <Mainpage exact path="/" />
         </Container>
        </Route>

@@ -9,6 +9,7 @@ import { Store } from 'react-notifications-component';
 // preferred way to import (from `v4`). Uses `animate__` prefix.
 import 'animate.css/animate.min.css';
 import { ethers } from "ethers";
+import BeatLoader from "react-spinners/BeatLoader";
 const { ethereum } = window;
 
 
@@ -72,6 +73,8 @@ const CustomisedButton = styled(Button)({
     lineHeight: 1.5,
     backgroundColor: '#78006e',
     borderColor: '#78006e',
+    borderBottomRightRadius: '19px',
+    borderTopRightRadius: '19px',
     fontFamily: [
       '-apple-system',
       'BlinkMacSystemFont',
@@ -213,6 +216,21 @@ const useStyles = makeStyles( theme => {
             width: '87%',
             alignItems: 'center',
             justifyContent: 'center'
+        },
+
+        taxInfo: {
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignContent: 'center',
+          position: 'relative',
+        },
+
+        loader: {
+          width: '100%',
+          top: '26px',
+          left: '38px',
+          position: 'absolute',
         }
     }
   });
@@ -228,6 +246,13 @@ export default  function Leftcontainer(props) {
     const classes = useStyles();
     //console.log(props.allowance);
     //console.log(props.tokenIn);
+    const [putvalue, setPutValue] = useState();
+
+
+
+    useEffect(()=> {
+
+    }, [putvalue]);
 
 
 
@@ -476,14 +501,17 @@ export default  function Leftcontainer(props) {
 
 
         const setMaxTokens = async () => {
-
+            //console.log("run");
             await props.updateAccount();
             const value = String(props.accountToken / 10 ** props.tokenDecimals);
+            //console.log(value);
             await updateToken(value);
             props.setTokenIn(props.accountToken);
-            const element = document.getElementsByName("value")[0];
-            //console.log(element);
+            //setPutValue(value);
+            const element = document.getElementsByName("sellvalue")[0];
+            //console.log(element.value);   
             element.value = value;
+            setPutValue(value);
             //console.log(document);
             //.setAttribute("value", accountToken);
         }
@@ -498,14 +526,20 @@ export default  function Leftcontainer(props) {
   return (
     <div className={classes.background}  >
         <div className={classes.taxInfo}>
-          Tax : Buy{props.buyFee / 100}% Sell {props.sellFee / 100}%  <i className="fa-brands fa-android"></i>
+          <div>Tax : Buy {props.buyFee / 100}% Sell {props.sellFee / 100}%  <i className="fa-brands fa-android"></i></div>
+          <div className={classes.loader}> 
+            {props.loading ?
+            <BeatLoader color={"#FFFFFF"} loading={props.loading}  size={15} />
+            :
+            ""
+          } </div>
         </div>
         
         <div className={classes.formone}>
 
             <div className={classes.pricehold}>
                 <Typography variant="body1" >
-                    Price/BNB
+                    BNB
                 </Typography> : 
                 <Typography variant="body1" >
                     {props.accountBNB / 10 ** 18 }
@@ -516,7 +550,7 @@ export default  function Leftcontainer(props) {
                     Token Recieved
                 </Typography> 
                 <Typography variant="body1" >
-                {props.tokenOut / 10 ** props.tokenDecimals} {props.tokenName} 
+                { Math.round(props.tokenOut / 10 ** props.tokenDecimals)} {props.tokenName} 
                 </Typography>
             </div>
 
@@ -541,10 +575,10 @@ export default  function Leftcontainer(props) {
 
             <div className={classes.pricehold}>
             <Typography variant="body1" >
-                Price/BNB
+                Token
             </Typography> : 
             <Typography variant="body1" >
-               {props.accountBNB / 10 ** 18 }
+               {Math.round(props.accountToken / 10 ** 18) }
             </Typography>
             </div>
             <div className={classes.pricehold}>
@@ -552,14 +586,14 @@ export default  function Leftcontainer(props) {
                 Token Recieved
             </Typography> 
             <Typography variant="body1" >
-               {props.BNBOut / 10 ** 18} BNB
+               {Math.round(props.BNBOut / 10 ** props.tokenDecimals, 4)} BNB
             </Typography>
             </div>
 
 
             <form noValidate autoComplete='off' className={classes.formcontain} onSubmit={sell}>
                 <div  className={classes.containmaxsell}>
-                    <input name="value" type="number" className={classes.forminputtwo}  placeholder="Amount Tokens"  onChange={BNBRecieved} />
+                    <input name="sellvalue" type="number" className={classes.forminputtwo}  placeholder="Amount Tokens"  onChange={BNBRecieved} />
                         <CustomisedButtonMax variant="contained"
                             background="#32003d"
                             size="small"
