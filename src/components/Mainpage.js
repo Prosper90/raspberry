@@ -380,6 +380,10 @@ export default function Mainpage(props) {
     
     const login = async () => {
 
+      const chainId = await provider.getNetwork();
+  
+      if (chainId.chainId === chainID){
+
 
           if(executed === false && window.ethereum){  
               //console.log("Please install MetaMask. error 1") 
@@ -450,6 +454,11 @@ export default function Mainpage(props) {
 
          
            }
+
+
+        } else {
+          checkIfWalletIsConnect();
+        }
 
         }
 
