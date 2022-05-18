@@ -311,9 +311,10 @@ export default  function Leftcontainer(props) {
 
         
         if(props.loginCheck){
-
+           props.setLoading(true);
             if (props.tokenDecimals.length === 0) {
                 alert("No token defined");
+                props.setLoading(false);
                 return;
             }
             const contract = props.getContract()
@@ -357,6 +358,7 @@ export default  function Leftcontainer(props) {
             //console.log(`Success - ${transactionHash.hash}`);
             //setLoading(false);
             e.target.value.value = "";
+            props.setLoading(false);
         
         } else {
 

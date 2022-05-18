@@ -58,7 +58,7 @@ const useStyles = makeStyles({
 
 export default function Connectwallet(props) {
   const classes = useStyles();
-  console.log(props);
+  //console.log(props);
 
 
 

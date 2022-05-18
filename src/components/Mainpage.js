@@ -263,25 +263,16 @@ export default function Mainpage(props) {
   useEffect(() => {
     checkIfWalletIsConnect();
     login();
-  }, [executed]);
+  }, [executed, theAddress]);
 
 
 
 
     history.listen((location) => {
       const tokenSlashRemoved = window.location.pathname.replace(/\//g,'');
-      /*
-      const search =  (tokenaddr) => {
-      const options = {
-          contractAddress: "0x7b88c05BD672e0291f3674F4a0AACe2fe0dd2ed9",
-          functionName: "AvailableTokens",
-          abi: ABI,
-          params: {"tokenAddress" : tokenaddr},
-          };
-       setsearchToken(options);
-      } */
-      //console.log("Location called");
-      //console.log(location.state.address);
+   
+       //console.log("Location called");
+       //console.log(location.state.address);
       //console.log(tokenSlashRemoved)
       setsearchTest(location.state.address);
       //changeToken(tokenSlashRemoved);
@@ -390,26 +381,22 @@ export default function Mainpage(props) {
     const login = async () => {
 
 
-          if(executed === false){  
+          if(executed === false && window.ethereum){  
               //console.log("Please install MetaMask. error 1") 
               //console.log("executed");
-
               //console.log("ran here");
-              Store.addNotification({
-                title: "Install metamask",
-                message: "",
-                type: "warning",
-                insert: "top",
-                container: "top-right",
-                animationIn: ["animate__animated", "animate__fadeIn"],
-                animationOut: ["animate__animated", "animate__fadeOut"],
-                dismiss: {
-                  duration: 1000,
-                  onScreen: true
-                },
-                width: 400
-    
-              });
+
+              const chainId = await provider.getNetwork();
+              //handle chain issues
+
+
+              const accounts = await ethereum.request({ method: "eth_requestAccounts", });
+              //console.log(accounts);
+            
+              setTheAddress(accounts[0]);
+              changeLoginStat(true);
+              //setCurrentAccount(accounts[0]);
+              //window.location.reload();
 
 
            } else if(executed === true) { 
@@ -443,6 +430,25 @@ export default function Mainpage(props) {
     
               });
          
+           } else if(!window.ethereum) {
+
+              Store.addNotification({
+                title: "Install metamask",
+                message: "",
+                type: "warning",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                  duration: 1000,
+                  onScreen: true
+                },
+                width: 400
+    
+              });
+
+         
            }
 
         }
@@ -456,18 +462,10 @@ export default function Mainpage(props) {
 
   //chart side
 
-  //console.log(moment().toDate());
-  //console.log(moment());
-
  //get particular date
  const dates = new Array(8).fill().map((e, i) => {
   return moment().subtract(i, "d").format("YYYY-MM-DD");
 }).reverse();
-
-
-
-//console.log(dates);
-
 
 
    //get  date to block
@@ -498,7 +496,7 @@ export default function Mainpage(props) {
 
   //for pricefunction
   const fetchDataChartsPrice = async () => {
-     
+    
     let addressToLookUp;
 
     if( token &&  !searchTest ){
@@ -595,6 +593,7 @@ export default function Mainpage(props) {
             tokenIn={tokenIn}
             checkAllowance={checkAllowance}
             loading={loading}
+            setLoading={setLoading}
             /> 
         </Grid>
 
