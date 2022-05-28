@@ -257,12 +257,12 @@ export default function Mainpage(props) {
     useEffect(() => {
       updateAccount();
     });
+    
  
 
    //third useEffect to check if account is connected
   useEffect(() => {
     checkIfWalletIsConnect();
-    login();
   }, [executed, theAddress]);
 
 
@@ -279,12 +279,35 @@ export default function Mainpage(props) {
     });
 
 
-    
+    const detectMetamask = () => {
+      if(!window.ethereum){
+        Store.addNotification({
+          title: "Install metamask",
+          message: "",
+          type: "warning",
+          insert: "top",
+          container: "top-right",
+          animationIn: ["animate__animated", "animate__fadeIn"],
+          animationOut: ["animate__animated", "animate__fadeOut"],
+          dismiss: {
+            duration: 1000,
+            onScreen: true
+          },
+          width: 400
+
+        });
+      } else {
+        return true;
+      }
+    }
 
 
 
     const checkIfWalletIsConnect = async () => {
-
+      if(executed === false){
+        detectMetamask();
+        return;
+      }
 
        const isMetaMaskConnected = async () => {
             const accounts = await provider.listAccounts();
@@ -335,7 +358,7 @@ export default function Mainpage(props) {
                   }
                     
                   }
-          
+                  login();
           
           
                 } else {
@@ -350,6 +373,10 @@ export default function Mainpage(props) {
 
 
     const updateAccount = async () => {
+
+      if(executed === true){
+      detectMetamask();
+
       let account = theAddress;
       if (!account) {
           const accounts = await ethereum.request({ method: "eth_accounts" });
@@ -364,7 +391,10 @@ export default function Mainpage(props) {
           checkAllowance(account, tokenContract);
       }
       setAccountBNB(String(await provider.getBalance(account)));
+      console.log("I Ran");
+    }
 
+    login();
 
      }
 
@@ -434,26 +464,7 @@ export default function Mainpage(props) {
     
               });
          
-           } else if(!window.ethereum) {
-
-              Store.addNotification({
-                title: "Install metamask",
-                message: "",
-                type: "warning",
-                insert: "top",
-                container: "top-right",
-                animationIn: ["animate__animated", "animate__fadeIn"],
-                animationOut: ["animate__animated", "animate__fadeOut"],
-                dismiss: {
-                  duration: 1000,
-                  onScreen: true
-                },
-                width: 400
-    
-              });
-
-         
-           }
+           } 
 
 
         } else {
@@ -572,7 +583,7 @@ export default function Mainpage(props) {
                     loginCheck={checkLoginStat}
                     tokenName={tokenName}
                     /> :
-                    <div></div>
+                    <div>" "</div>
         }
 
           <Leftcontainer 
@@ -618,7 +629,7 @@ export default function Mainpage(props) {
 
             :
 
-             <div></div>
+             <div> " " </div>
 
           }
 
@@ -631,7 +642,7 @@ export default function Mainpage(props) {
 
           :
 
-          <div></div>
+          <div>" "</div>
 
           }
 
@@ -647,7 +658,7 @@ export default function Mainpage(props) {
               />
 
             :
-            <div></div>
+            <div>" "</div>
 
 
             

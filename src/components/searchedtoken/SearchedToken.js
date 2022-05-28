@@ -133,28 +133,7 @@ export default  function Leftcontainer(props) {
 
   return (
     <div className={classes.background}  >
-        <div className={classes.taxInfo} >
-          <div className={classes.each}> <p className={classes.green} >Address</p>  <p className={classes.p} >{props.tokenData[0]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green} >Router</p>  <p className={classes.p}>{props.tokenData[1]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green} >SellTax</p>  <p className={classes.p}>{props.tokenData[2]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green} >BuyTax</p>  <p className={classes.p}>{props.tokenData[3]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green} >LPTax</p>  <p className={classes.p}>{props.tokenData[4]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green} >BurnTax</p>  <p className={classes.p}>{props.tokenData[5]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green} >WalletTax1</p>  <p className={classes.p}>{props.tokenData[6]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green} >WalletTax2</p>  <p className={classes.p}>{props.tokenData[7]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green} >BurnWallet</p>  <p className={classes.p}>{props.tokenData[8]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green} >Wallet1</p>  <p className={classes.p}>{props.tokenData[9]}</p>  </div>
-          <div className={classes.each}> <p className={classes.green}>Wallet2</p>  <p className={classes.p}>{props.tokenData[10]}</p>  </div>
-         
-        </div>
-        
-       
-
-
-
-      
-
-
+      This Token is not Listed
     </div>
     
   )

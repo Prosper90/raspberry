@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { styled } from '@material-ui/core/styles';
+import { useHistory } from 'react-router-dom';
 
 
 
@@ -58,6 +59,7 @@ const useStyles = makeStyles({
 
 export default function Connectwallet(props) {
   const classes = useStyles();
+  const history = useHistory();
   //console.log(props);
 
 
@@ -71,6 +73,11 @@ export default function Connectwallet(props) {
 
   const logOutOf = () => {
     console.log("connected clicked");
+  }
+
+  const addToken = () => {
+    window.location.href = 'https://forms.gle/1MLNuez2Shetatav9'; 
+    return null;
   }
 
 
@@ -105,6 +112,7 @@ export default function Connectwallet(props) {
         <CustomisedButton variant="contained"
         background="#32003d"
         size="large"
+        onClick={addToken}
         >
           Add Token
         </CustomisedButton>

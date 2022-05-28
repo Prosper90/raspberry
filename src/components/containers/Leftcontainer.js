@@ -533,7 +533,7 @@ export default  function Leftcontainer(props) {
             {props.loading ?
             <BeatLoader color={"#FFFFFF"} loading={props.loading}  size={15} />
             :
-            ""
+            <div></div>
           } </div>
         </div>
         
@@ -580,12 +580,12 @@ export default  function Leftcontainer(props) {
                 Token
             </Typography> : 
             <Typography variant="body1" >
-               {Math.round(props.accountToken / 10 ** 18) }
+               {Math.round(props.accountToken / 10 ** 18, 4) }
             </Typography>
             </div>
             <div className={classes.pricehold}>
             <Typography variant="body1" >
-                Token Recieved
+                Token Received 
             </Typography> 
             <Typography variant="body1" >
                {Math.round(props.BNBOut / 10 ** props.tokenDecimals, 4)} BNB

@@ -148,7 +148,7 @@ export default function Address(props) {
         <form noValidate autoComplete='off'  className={ expandInput ? classes.inputExpanded : classes.formContain } onSubmit={search} >
         <InputBase
                 placeholder="Search Token…"
-                classes={ classes.inputInput }
+                className={ classes.inputInput }
                 onClick={() => setexpandInput(true)}
                 onBlur={() => setexpandInput(false)}
                 name="value"
