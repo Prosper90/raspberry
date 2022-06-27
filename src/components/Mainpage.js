@@ -7,19 +7,17 @@ import { makeStyles } from '@material-ui/core/styles';
 import Address from './rightcontainer/Address';
 import Connectwallet from './rightcontainer/Connectwallet';
 import SearchedToken from "./searchedtoken/SearchedToken.js";
-import { useMoralis } from "react-moralis";
-import { useTokenPrice } from "react-moralis";
-import  { Moralis, chainId  } from 'moralis';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { Store } from 'react-notifications-component';
 import 'animate.css/animate.min.css';
 import { useRouteMatch } from "react-router-dom";
 import { useHistory } from 'react-router-dom';
-import { useMoralisWeb3Api } from "react-moralis";
 import moment from 'moment';
 import { ethers } from "ethers";
+import WalletConnectProvider from "@walletconnect/web3-provider";
+import Web3Modal from "web3modal";
+import Fortmatic from "fortmatic";
 import { contractABI, tokenABI, contractAddress, chainID, pancakeRouter, pancakeABIuse } from "../utils/constants";
-import axios from 'axios';
 
 
 
@@ -48,7 +46,7 @@ const useStyles = makeStyles( theme => {
         rightcontainer: {
             display: "flex",
             flexDirection: "column",
-            gap: "25px",
+            gap: "12px",
             [theme.breakpoints.down('sm')]:{
                 marginTop: '65px',
             }
@@ -81,10 +79,6 @@ export default function Mainpage(props) {
     //console.log(WidthChange);
     let [theAddress, setTheAddress] = useState();
     const [checkLoginStat, changeLoginStat] = useState(false);
-    const [searchToken, setsearchToken] = useState({});
-    const [tokenData, settokenData] = useState([]);
-    const [blockArray, setblockArray] = useState([]);
-    const [priceArray, setpriceArray] = useState([]);
     const [initialData, setinitialData] = useState([]);
     const [accountToken, setAccountToken] = useState("0");
     const [accountBNB, setAccountBNB] = useState("0");
@@ -95,16 +89,19 @@ export default function Mainpage(props) {
     const [tokenDecimals, setTokenDecimals] = useState("");
     const [allowance, setAllowance] = useState("12345");
     const [tokenOut, setTokenOut] = useState("0");
-    const [isListed, setListed] = useState(false);
+    const [isListed, setListed] = useState(true);
     const [tokenIn, setTokenIn] = useState("0");
     const [BNBOut, setBNBOut] = useState("0");
     const [BNBIn, setBNBIn] = useState("0");
     const [searchChanged, setsearchChanged] = useState();
     const [executed, setExecuted] = useState(false);
+    const [createdsigner, setSigner] = useState();
+    const [provider, setProvider] = useState();
+    const [mobileprovider, setMobileProvider] = useState({});
+    const [modalconnected, setModalConnected] = useState(false);
     let [loading, setLoading] = useState(false);
 
     
-    const Web3Api = useMoralisWeb3Api();
     const history = useHistory();
 
     const match = useRouteMatch('/:token');
@@ -112,32 +109,84 @@ export default function Mainpage(props) {
       token: match?.params.token,
     };
 
+
+
+
     const { ethereum } = window;
-    let provider; 
-    
-    if(!window.ethereum){
-     //console.log('Install metamask');
-      // metamask is not connected
-      //checkIfWalletIsConnect();
-           
-    } else {
-      provider = new ethers.providers.Web3Provider(window.ethereum);
+
+
+    //function to call wallet connect
+    const connectmetamask = async () => {
+       //console.log("connect modal called");
+      const customNetworkOptions = {
+        rpcUrl: 'https://bsc-dataseed1.binance.org/',
+        chainId: 56
+        } 
+
+
+         // Example for Polygon/Matic:
+          const providerOptions = {
+            walletconnect: {
+              package: WalletConnectProvider, // required
+              options: {
+                rpc: {
+                  1: "https://bsc-dataseed1.binance.org/",
+                  2: "https://bsc-dataseed2.binance.org/",
+                  3: "https://bsc-dataseed1.defibit.io/",
+                  4: "https://bsc-dataseed3.defibit.io/",
+                  5: "https://bsc-dataseed1.ninicoin.io/",
+                  6: "https://bsc-dataseed4.ninicoin.io/"
+                } // required
+              }
+            },
+            fortmatic: {
+              package: Fortmatic, // required
+              options: {
+                key: "FORTMATIC_KEY", // required
+                network: customNetworkOptions // if we don't pass it, it will default to localhost:8454
+              }
+            }
+          };
+          
+          const web3Modal = new Web3Modal({
+            network: "mainnet", // optional
+            cacheProvider: true, // optional
+            providerOptions // required
+          });
+
+          const instance = await web3Modal.connect();
+          const gettingprovider = new ethers.providers.Web3Provider( instance )
+          setMobileProvider( gettingprovider );
+          setModalConnected(true);
     }
 
+
+   
+    const getextensionProvider = async () => {
+      
+        setProvider( new ethers.providers.Web3Provider(window.ethereum) );
+        //console.log("using this one");
+    }
+    
+
+
+
+
+
+    
+
+
    const [searchTest, setsearchTest] = useState();
-   Moralis.start({ serverUrl : process.env.REACT_APP_serverUrl, appId : process.env.REACT_APP_appId });
 
 
      //gets the inputed Token Contract
     const getTokenContract = (address) => {
-      const provider = new ethers.providers.Web3Provider(ethereum);
       const signer = provider.getSigner();
       return new ethers.Contract(address, tokenABI, signer);
       }
       
      //gets our own contract
     const getContract = () => {
-        const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         return new ethers.Contract(contractAddress, contractABI, signer);
       }
@@ -162,7 +211,7 @@ export default function Mainpage(props) {
         //console.log(Contract +" Our won contract");
         const data = await Contract.AvailableTokens(address);
         //console.log(data);
-        const listed = data[1] != "0x0000000000000000000000000000000000000000";
+        const listed = data[1] !== "0x0000000000000000000000000000000000000000";
         setListed(listed);
         if (listed) {
             setTokenName(await Token.name());
@@ -197,37 +246,19 @@ export default function Mainpage(props) {
 
     //useeffect
     useEffect(() => {
+
       
-    //for chart
-      if(blockArray.length === 0){
-        fetchDataCharts();
-      };
-
-      if(blockArray.length !== 0) {
-        fetchDataChartsPrice(); 
-      };
+      if(!window.ethereum){
+        //console.log("outside ran")
+          connectmetamask();
+      } else {
+        getextensionProvider();
+      }
 
 
-      if(priceArray.length !== 0) {
-        let iniValue = [];
-      dates.map((data, a) => {
-       priceArray.map((e, i) => {
-         
-         if(a === i){
-          const dateString = `${data}`;
-          iniValue.push({time: dateString, value: e  });
-        }  
-       });
-     });  
-    
-     //setinitialData(iniValue);
 
-     }
-
-     //console.log(initialData);
-    
-
-
+      fetchDataChartsPrice(); 
+  
 
     // for searching listed tokens
     const fetchdata = async () => {
@@ -238,11 +269,9 @@ export default function Mainpage(props) {
       //console.log(token);
 
      } else if ( token  &&  searchTest ){
-      // const transaction = await Moralis.executeFunction(searchToken);
        //settokenData(transaction);
        //console.log("in-direct call called");
        changeToken(searchTest);
-       //console.log(searchTest);
 
      }
 
@@ -250,153 +279,209 @@ export default function Mainpage(props) {
      }
 
     fetchdata();
-    }, [searchToken,  blockArray, priceArray, searchTest, searchChanged]);
+    }, [searchTest, searchChanged]);
 
 
     //second useEffect to check if account is connected
     useEffect(() => {
-      updateAccount();
+      if(window.ethereum){
+        if(provider){
+          updateAccount();
+        }
+      }
     });
     
- 
 
    //third useEffect to check if account is connected
   useEffect(() => {
-    checkIfWalletIsConnect();
+      if(window.ethereum){
+        if(provider){
+          checkIfWalletIsConnect();
+        }
+      }
   }, [executed, theAddress]);
 
 
 
 
     history.listen((location) => {
-      const tokenSlashRemoved = window.location.pathname.replace(/\//g,'');
-   
-       //console.log("Location called");
-       //console.log(location.state.address);
-      //console.log(tokenSlashRemoved)
       setsearchTest(location.state.address);
-      //changeToken(tokenSlashRemoved);
     });
 
 
+
+    /*
     const detectMetamask = () => {
       if(!window.ethereum){
-        Store.addNotification({
-          title: "Install metamask",
-          message: "",
-          type: "warning",
-          insert: "top",
-          container: "top-right",
-          animationIn: ["animate__animated", "animate__fadeIn"],
-          animationOut: ["animate__animated", "animate__fadeOut"],
-          dismiss: {
-            duration: 1000,
-            onScreen: true
-          },
-          width: 400
-
-        });
+        connectmetamask();
+        return false;
       } else {
         return true;
       }
     }
-
+*/
 
 
     const checkIfWalletIsConnect = async () => {
-      if(executed === false){
-        detectMetamask();
-        return;
-      }
 
-       const isMetaMaskConnected = async () => {
-            const accounts = await provider.listAccounts();
-            return accounts.length > 0;
-        }
+      if(window.ethereum){
+
+              //console.log(provider);
+              const chainId = await provider.getNetwork();
+              //console.log(chainId.chainId);
+             //console.log(chainID)
+              if (chainId.chainId !== chainID){
+                //alert("WrongChain");
         
-          await isMetaMaskConnected().then( async (connected) => {
-            if (connected) {
-                // metamask is connected
-                const chainId = await provider.getNetwork();
-                //console.log(chainId.chainId);
-               //console.log(chainID)
-                //handle chain issues
-                if (chainId.chainId !== chainID){
-                  //alert("WrongChain");
-          
-                  try {
-                     
-                    //console.log("entered one");
-                    await window.ethereum.request({
-                      method: "wallet_switchEthereumChain",
-                      params: [{
-                          chainId: `0x${Number(97).toString(16)}`,
-                      }]
-                    });
+                try {
+                   
+                  //console.log("entered one");
+                  await window.ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{
+                        chainId: `0x${Number(97).toString(16)}`,
+                    }]
+                  });
 
-                    setExecuted(true);
-                    
-                  } catch (error) {
-                    
-                    if(error === 4902 ){
-                      //console.log("entered two");
-                    await window.ethereum.request({
-                      method: "wallet_addEthereumChain",
-                      params: [{
-                          chainId: `0x${Number(97).toString(16)}`,
-                          rpcUrls: [" https://data-seed-prebsc-1-s1.binance.org:8545"],
-                          chainName: "BSC testnet",
-                          nativeCurrency: {
-                              name: "BSC",
-                              symbol: "BNB",
-                              decimals: 18                          
-                            },
-                          blockExplorerUrls: ["https://explorer.binance.org/smart-testnet"]
-                      }]
-                    });
+                  updateAccount();
                   
-                  }
-                    
-                  }
-                  login();
-          
-          
-                } else {
+                } catch (error) {
+                  
+                  if(error === 4902 ){
+                    //console.log("entered two");
+                  await window.ethereum.request({
+                    method: "wallet_addEthereumChain",
+                    params: [{
+                        chainId: `0x${Number(97).toString(16)}`,
+                        rpcUrls: [" https://data-seed-prebsc-1-s1.binance.org:8545"],
+                        chainName: "BSC testnet",
+                        nativeCurrency: {
+                            name: "BSC",
+                            symbol: "BNB",
+                            decimals: 18                          
+                          },
+                        blockExplorerUrls: ["https://explorer.binance.org/smart-testnet"]
+                    }]
+                  });
+                
+                }
                   
                 }
-          
+                updateAccount();
+        
+              } else if( chainId.chainId === chainID) {
+                //console.log("running");
+                updateAccount();
+                
+              }
+        
 
-            }
-        });
+
+      }
 
     }
 
 
     const updateAccount = async () => {
+      if(executed === false ){
+          //run for extension
+          let account = theAddress;
+          if (!account) {
+              const accounts = await ethereum.request({ method: "eth_accounts" });
+              //console.log(accounts)
+              account = accounts[0];
+              //const signer = provider.getSigner();
+              //console.log("Account:", await signer.getAddress());
+          }
+          
+          if (tokenContract) {
+              setAccountToken(String(await getTokenContract(tokenContract).balanceOf(account)));
+              checkAllowance(account, tokenContract);
+          }
+          setAccountBNB(String(await provider.getBalance(account)));
+          //console.log("I Ran");
+          setExecuted(true);
+          login();
 
-      if(executed === true){
-      detectMetamask();
 
-      let account = theAddress;
-      if (!account) {
-          const accounts = await ethereum.request({ method: "eth_accounts" });
-          //console.log(accounts)
-          account = accounts[0];
-          //const signer = provider.getSigner();
-          //console.log("Account:", await signer.getAddress());
-      }
       
-      if (tokenContract) {
-          setAccountToken(String(await getTokenContract(tokenContract).balanceOf(account)));
-          checkAllowance(account, tokenContract);
-      }
-      setAccountBNB(String(await provider.getBalance(account)));
-      console.log("I Ran");
-    }
 
-    login();
+     } else if(executed === true ) {
+
+
+          //for extension
+          let account = theAddress;
+          if (!account) {
+              const accounts = await ethereum.request({ method: "eth_accounts" });
+              //console.log(accounts)
+              account = accounts[0];
+              //const signer = provider.getSigner();
+              //console.log("Account:", await signer.getAddress());
+          }
+          
+          if (tokenContract) {
+              setAccountToken(String(await getTokenContract(tokenContract).balanceOf(account)));
+              checkAllowance(account, tokenContract);
+          }
+          setAccountBNB(String(await provider.getBalance(account)));
+
+          
+          const accounts = await ethereum.request({ method: "eth_requestAccounts", });
+        
+          setTheAddress(accounts[0]);
+          changeLoginStat(true);
+
+      
+     }
 
      }
+
+
+     //update mobile
+     /*
+     const updatemobileAccount = async () => {
+      if(executed === false ){
+          let account = theAddress;
+          if (!account) {
+              console.log(mobileprovider);
+              const signer = mobileprovider.getSigner()
+              account =  await signer.getAddress();
+          }
+          
+          if (tokenContract) {
+              setAccountToken(String(await getTokenContract(tokenContract).balanceOf(account)));
+              checkAllowance(account, tokenContract);
+          }
+          setAccountBNB(String(await mobileprovider.getBalance(account)));
+          //console.log("I Ran");
+          setExecuted(true);
+          login();
+
+     } else if(executed === true ) {
+
+          let account = theAddress;
+          if (!account) {
+            const signer = mobileprovider.getSigner();
+            account =  await signer.getAddress();
+          }
+          
+          if (tokenContract) {
+              setAccountToken(String(await getTokenContract(tokenContract).balanceOf(account)));
+              checkAllowance(account, tokenContract);
+          }
+          setAccountBNB(String(await mobileprovider.getBalance(account)));
+
+          
+          const signer = mobileprovider.getSigner();
+          const accounts =  await signer.getAddress();
+        
+          setTheAddress(accounts);
+          changeLoginStat(true);
+      
+     }
+
+     }
+     */
 
      
     
@@ -407,40 +492,20 @@ export default function Mainpage(props) {
 
       
     //Login code
-    
     const login = async () => {
-
       const chainId = await provider.getNetwork();
   
       if (chainId.chainId === chainID){
+        await ethereum.request({ method: "eth_requestAccounts" });
 
-
-          if(executed === false && window.ethereum){  
-              //console.log("Please install MetaMask. error 1") 
-              //console.log("executed");
-              //console.log("ran here");
-
-              const chainId = await provider.getNetwork();
-              //handle chain issues
-
-
-              const accounts = await ethereum.request({ method: "eth_requestAccounts", });
-              //console.log(accounts);
-            
-              setTheAddress(accounts[0]);
-              changeLoginStat(true);
-              //setCurrentAccount(accounts[0]);
-              //window.location.reload();
-
-
-           } else if(executed === true) { 
+           if(executed === true) {
+             
                //console.log("executed two");
-              const chainId = await provider.getNetwork();
+              //const chainId = await provider.getNetwork();
                     //handle chain issues
-
-
               const accounts = await ethereum.request({ method: "eth_requestAccounts", });
               //console.log(accounts);
+              //console.log("I ran here ooooo");
              
 
               setTheAddress(accounts[0]);
@@ -474,6 +539,74 @@ export default function Mainpage(props) {
         }
 
 
+
+
+     const mobileLogin = async () => {
+
+      console.log(mobileprovider);
+    
+      const chainId = await mobileprovider.getSigner().getChainId();
+      console.log(chainId);
+  
+      if (chainId.chainId === chainID){
+
+           if(executed === true) {
+             
+             
+               //console.log("executed two");
+              //const chainId = await provider.getChainId();
+
+              const signer = mobileprovider.getSigner();
+              const account = await signer.getAddress() 
+             
+
+              setTheAddress(account);
+              changeLoginStat(true);
+              //setCurrentAccount(accounts[0]);
+              // window.location.reload();
+            
+              Store.addNotification({
+                title: "Wallet Connected",
+                message: "",
+                type: "success",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                  duration: 1000,
+                  onScreen: true
+                },
+                width: 400
+    
+              });
+         
+           } 
+
+
+
+        } else {
+          Store.addNotification({
+            title: "Wrong Chain Switch",
+            message: "",
+            type: "warning",
+            insert: "top",
+            container: "top-right",
+            animationIn: ["animate__animated", "animate__fadeIn"],
+            animationOut: ["animate__animated", "animate__fadeOut"],
+            dismiss: {
+              duration: 1000,
+              onScreen: true
+            },
+            width: 400
+          });
+        }
+
+        changeLoginStat(false);
+
+     }
+
+
   
 
 
@@ -483,33 +616,35 @@ export default function Mainpage(props) {
   //chart side
 
  //get particular date
+ /*
  const dates = new Array(8).fill().map((e, i) => {
   return moment().subtract(i, "d").format("YYYY-MM-DD");
 }).reverse();
+*/
 
 
-   //get  date to block
-  const fetchDataCharts = async () => {
+ 
 
-    //let url = "https://cryptocurrency-ohlcv-and-vwap.p.rapidapi.com/metrics/ohlcv";
 
-    //const putArray = [];
-    
-    let putArray = await Promise.all(dates.map( async (e, i) => {
-          //console.log("happy");
-          const options = { chain: "bsc", date: e};
-        return await Web3Api.native.getDateToBlock(options);
-          //console.log("Pushing data");
-          //putArray.push(date);
-        })
-        )
 
-        //console.log(putArray);
-        setblockArray(putArray);
-    
+//format date
+/*
+const formatdate = (incoming) => {
+  var date = new Date(incoming); // Date 2011-05-09T06:08:45.178Z
+  var year = date.getFullYear();
+  var month = ("0" + (date.getMonth() + 1)).slice(-2);
+  var day = ("0" + date.getDate()).slice(-2);
+
+  var formatted = `${year}-${month}-${day}`;
+  console.log(formatted);
       
-  };
-  //console.log(blockArray);
+  return  formatted; // 2011-05-09
+}
+*/
+
+
+
+
 
 
 
@@ -518,11 +653,14 @@ export default function Mainpage(props) {
   const fetchDataChartsPrice = async () => {
     
     let addressToLookUp;
+    const today = moment().format("YYYY-MM-DD");
+    //console.log(today);
 
     if( token &&  !searchTest ){
       //console.log(token);
       addressToLookUp = token;
       setsearchChanged(token);
+      
     } else if(token  &&  searchTest){
       //console.log(searchTest);
       addressToLookUp = searchTest;
@@ -532,37 +670,43 @@ export default function Mainpage(props) {
     }
 
 
-      if(blockArray.length !== 0){
-        
-        let prices = await Promise.all(blockArray.map( async (data) => {
-           //console.log("Token price called first");
-           //console.log(data.block);
-           const options = {
-            address: addressToLookUp,
-            chain: "bsc",
-            exchange: "PancakeSwapv2",
-            to_block: data.block
-           };
-          //console.log(data.block);
-          return await Web3Api.token.getTokenPrice(options);
-
-          }))
-
-         prices = prices.map(e => e.usdPrice);
-         //console.log("priceArray called");
-         setpriceArray(prices);
-         //console.log(priceArray);
 
       
-      };
+      const response = await fetch(`https://api.coinbrain.com/cointoaster/coins/history-new/usd/?since=${today}T06%3A56%3A34.000Z&minuteInterval=5&baseToken=${addressToLookUp}&liquidityPoolAddress=0x815bff37827499d800B0Da4000A318c6488aD4cA`);
+      const data = await response.json();
+      //console.log(data);
+      
+       let chartarr = [];
+       let index ;
+       data.map((each) => {
 
-        
-          
+
+         if(each.date !== index ){
+ 
+           //console.log(index);
+           
+           const d = moment(each.date).utc().valueOf();
+
+
+
+           chartarr.push({
+             time: d,
+             open: each.openPrice, 
+             high: each.maximumPrice, 
+             low: each.minimumPrice, 
+             close: each.closePrice,
+             });
+
+             index = each.date;
+         }
+
+       });
+       
+       //console.log(chartarr);
+       setinitialData(chartarr);
+
   };
 
-  //console.log(priceArray);
-
-  
   
 
 
@@ -583,38 +727,47 @@ export default function Mainpage(props) {
                     loginCheck={checkLoginStat}
                     tokenName={tokenName}
                     /> :
-                    <div>" "</div>
+                    <div></div>
         }
+           
+          {isListed ? 
 
-          <Leftcontainer 
-            buyFee={buyFee}
-            sellFee={sellFee}
-            tokenName={tokenName}
-            tokenOut={tokenOut}
-            accountBNB={accountBNB}
-            chain={chainId} 
-            loginCheck={checkLoginStat}
-            addr={theAddress}
-            tokenDecimals={tokenDecimals}
-            getContract={getContract}
-            tokenContract={tokenContract}
-            setTokenIn={setTokenIn}
-            setTokenOut={setTokenOut}
-            theAddress={theAddress}
-            BNBOut={BNBOut}
-            BNBIn={BNBIn}
-            setBNBOut={setBNBOut}
-            setBNBIn={setBNBIn}
-            allowance={allowance}
-            setAllowance={setAllowance}
-            updateAccount={updateAccount}
-            accountToken={accountToken}
-            getTokenContract={getTokenContract}
-            tokenIn={tokenIn}
-            checkAllowance={checkAllowance}
-            loading={loading}
-            setLoading={setLoading}
-            /> 
+              <Leftcontainer 
+              buyFee={buyFee}
+              sellFee={sellFee}
+              tokenName={tokenName}
+              tokenOut={tokenOut}
+              accountBNB={accountBNB}
+              chain={chainID} 
+              loginCheck={checkLoginStat}
+              addr={theAddress}
+              tokenDecimals={tokenDecimals}
+              getContract={getContract}
+              tokenContract={tokenContract}
+              setTokenIn={setTokenIn}
+              setTokenOut={setTokenOut}
+              theAddress={theAddress}
+              BNBOut={BNBOut}
+              BNBIn={BNBIn}
+              setBNBOut={setBNBOut}
+              setBNBIn={setBNBIn}
+              allowance={allowance}
+              setAllowance={setAllowance}
+              updateAccount={updateAccount}
+              accountToken={accountToken}
+              getTokenContract={getTokenContract}
+              tokenIn={tokenIn}
+              checkAllowance={checkAllowance}
+              loading={loading}
+              setLoading={setLoading}
+              contractAddress={contractAddress}
+              /> 
+
+              :
+
+               <SearchedToken />
+         }
+         
         </Grid>
 
         <Grid item  xs={12} md={8} lg={8}  className={classes.rightcontainer}>
@@ -629,20 +782,24 @@ export default function Mainpage(props) {
 
             :
 
-             <div> " " </div>
+             <div></div>
 
           }
 
           {WidthChange ? 
 
-            <Connectwallet login={login}  
+            <Connectwallet 
+            login={ login }  
             loginCheck={checkLoginStat} 
-            changeloginValue={changeLoginStat} 
+            changeloginValue={changeLoginStat}
+            addr={theAddress}
+            WidthChange={WidthChange}
+            mobileLogin={mobileLogin}
             />
 
           :
 
-          <div>" "</div>
+          <div></div>
 
           }
 
@@ -652,13 +809,16 @@ export default function Mainpage(props) {
             {!WidthChange ? 
 
             
-              <Connectwallet login={login}  
+              <Connectwallet 
+              login={ login}
+              mobileLogin={mobileLogin}  
               loginCheck={checkLoginStat} 
-              changeloginValue={changeLoginStat} 
+              changeloginValue={changeLoginStat}
+              WidthChange={WidthChange}
               />
 
             :
-            <div>" "</div>
+            <div></div>
 
 
             

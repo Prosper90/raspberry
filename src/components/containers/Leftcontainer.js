@@ -3,14 +3,11 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { styled } from '@material-ui/core/styles';
-//import { useMoralisWeb3Api, useMoralisWeb3ApiCall } from "react-moralis";
-//import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
 import { Store } from 'react-notifications-component';
 // preferred way to import (from `v4`). Uses `animate__` prefix.
 import 'animate.css/animate.min.css';
 import { ethers } from "ethers";
 import BeatLoader from "react-spinners/BeatLoader";
-const { ethereum } = window;
 
 
 
@@ -243,6 +240,7 @@ const useStyles = makeStyles( theme => {
 
 export default  function Leftcontainer(props) {
     
+      /* global BigInt */
     const classes = useStyles();
     //console.log(props.allowance);
     //console.log(props.tokenIn);
@@ -252,7 +250,7 @@ export default  function Leftcontainer(props) {
 
     useEffect(()=> {
 
-    }, [putvalue]);
+    }, [putvalue,  props.BNBOut]);
 
 
 
@@ -281,20 +279,27 @@ export default  function Leftcontainer(props) {
     const BNBRecieved = async (e) => {
         e.preventDefault();
         const amount = e.target.value;
+        console.log(amount);
         //console.log(amount);
 
         if (amount === "0" || !amount) {
+          //console.log("error 1");
             props.setBNBOut("0");
             return;
         }
         const contract = props.getContract();
-        const decimalAmount = String(Number(String(amount) * 10 ** props.tokenDecimals));
+        //console.log("error 2");
+        const decimalAmount = String(BigInt(String(amount) * 10 ** props.tokenDecimals));
+        //console.log("error 3");
         props.setTokenIn(decimalAmount);
+        //console.log("error 4");
         const ETHOut = await contract.getETHAmountOut(String(props.tokenContract), decimalAmount);
+        //console.log("error 5");
         props.setBNBOut(String(ETHOut));
+        //console.log("error 6");
 
         if (!props.allowance || props.allowance < decimalAmount) await props.checkAllowance(props.theAddress, props.tokenContract);
-
+        //console.log("error 7");
 
     }
 
@@ -307,18 +312,20 @@ export default  function Leftcontainer(props) {
         e.preventDefault();
 
         //console.log(e.target.value.value);
-        const amount = e.target.value.value;
+        //console.log("clicked sell");
+        //const amount = e.target.value.value;
 
         
         if(props.loginCheck){
+          //console.log("started");
            props.setLoading(true);
             if (props.tokenDecimals.length === 0) {
                 alert("No token defined");
                 props.setLoading(false);
                 return;
             }
-            const contract = props.getContract()
-            const tokenOutSlippage = String(Number(props.tokenOut) * Number(99) / Number(100));
+            const contract = props.getContract();
+            const tokenOutSlippage = String(BigInt(props.tokenOut) * BigInt(99) / BigInt(100));
             const transactionHash = await contract.SwapETH(props.tokenContract, tokenOutSlippage, { value: props.BNBIn });
 
             //console.log("transacting");
@@ -358,6 +365,7 @@ export default  function Leftcontainer(props) {
             //console.log(`Success - ${transactionHash.hash}`);
             //setLoading(false);
             e.target.value.value = "";
+            props.setTokenOut("0");
             props.setLoading(false);
         
         } else {
@@ -389,23 +397,26 @@ export default  function Leftcontainer(props) {
 
     const sell = async (e) => {
         e.preventDefault();
+        console.log("entered sell");
         //console.log(e.target.value.value);
-        const amount = e.target.value.value;
+        //const amount = e.target.value.value;
 
 
         if(props.loginCheck){
-         
+          console.log("Still checking");
             if (props.tokenDecimals.length === 0) {
                 alert("No token defined");
                 return;
             }
             const contract = props.getContract()
-            const TokenContract = props.getTokenContract(props.tokenContract);
-            const BNBOutSlippage = String(Number(props.BNBOut) * Number(99) / Number(100));
+            //const TokenContract = props.getTokenContract(props.tokenContract);
+            const BNBOutSlippage = String(BigInt(props.BNBOut) * BigInt(99) / BigInt(100));
             const transactionHash = await contract.SwapTokens(props.tokenContract, props.tokenIn, BNBOutSlippage);
-            //setLoading(true);
+            props.setLoading(true);
             await transactionHash.wait();
-            //setLoading(false);
+            props.setLoading(false);
+            props.setBNBOut("0");
+            e.target.sellvalue.value = "";
 
             Store.addNotification({
                 title: "Successful",
@@ -440,7 +451,8 @@ export default  function Leftcontainer(props) {
 
             //console.log(`Success - ${transactionHash.hash}`);
             //setIsLoading(false);
-             e.target.value.value = "";
+             
+
                  
         } else {
 
@@ -467,17 +479,29 @@ export default  function Leftcontainer(props) {
 
 
     
-        
 
       
         const approve = async() => {
-            const contract = props.getTokenContract(props.tokenContract)
-            const allowanceAmount = String(Number(2) ** Number(256) - Number(1));
-            const transactionHash = await contract.approve(props.contractAddress, allowanceAmount);
+            //console.log("approve called");
+            props.setLoading(true);
+            const contract = props.getTokenContract(props.tokenContract);
+            //console.log("error 1");
+            //const allowanceAmount = ethers.utils.parseEther(String ( ethers.BigNumber.from( 2**(256 - 1) ) ) );
+            const allowanceAmount = BigInt( 2 ** (256 - 1) );
+            //console.log("error 2");
+            //console.log(props.contractAddress);
+            //console.log(allowanceAmount);
+              //console.log(allowanceAmount.toNumber());
+            const transactionHash = await contract.approve(props.contractAddress, allowanceAmount.toString());
+            //console.log(transactionHash);
             //setIsLoading(true);
             //console.log(`Loading - ${transactionHash.hash}`);
             await transactionHash.wait();
-            props.setAllowance(allowanceAmount);
+            //console.log(allowanceAmount);
+            props.setAllowance(allowanceAmount.toString());
+            props.setLoading(false);
+            //setfixerror(true);
+            //console.log("success");
             //console.log(`Success - ${transactionHash.hash}`);
             //setIsLoading(false);
         }
@@ -491,7 +515,7 @@ export default  function Leftcontainer(props) {
                 return;
             }
             const contract = props.getContract();
-            const decimalAmount = String(Number(String(value) * 10 ** props.tokenDecimals));
+            const decimalAmount = String(BigInt(String(value) * 10 ** props.tokenDecimals));
             props.setTokenIn(decimalAmount);
             const ETHOut = await contract.getETHAmountOut(String(props.tokenContract), decimalAmount);
             props.setBNBOut(String(ETHOut));
@@ -544,15 +568,15 @@ export default  function Leftcontainer(props) {
                     BNB
                 </Typography> : 
                 <Typography variant="body1" >
-                    {props.accountBNB / 10 ** 18 }
+                    {(props.accountBNB / 10 ** 18).toFixed(6) }
                 </Typography>
             </div>
             <div className={classes.pricehold}>
                 <Typography variant="body1" >
-                    Token Recieved
+                    Token Received
                 </Typography> 
                 <Typography variant="body1" >
-                { Math.round(props.tokenOut / 10 ** props.tokenDecimals)} {props.tokenName} 
+                {(props.tokenOut / 10 ** props.tokenDecimals).toFixed(3)} {props.tokenName} 
                 </Typography>
             </div>
 
@@ -580,15 +604,15 @@ export default  function Leftcontainer(props) {
                 Token
             </Typography> : 
             <Typography variant="body1" >
-               {Math.round(props.accountToken / 10 ** 18, 4) }
+               {(props.accountToken / 10 ** 18).toFixed(2) }
             </Typography>
             </div>
             <div className={classes.pricehold}>
             <Typography variant="body1" >
-                Token Received 
+                BNB Received 
             </Typography> 
             <Typography variant="body1" >
-               {Math.round(props.BNBOut / 10 ** props.tokenDecimals, 4)} BNB
+               {(props.BNBOut / 10 ** props.tokenDecimals).toFixed(5)} BNB
             </Typography>
             </div>
 
@@ -606,7 +630,7 @@ export default  function Leftcontainer(props) {
                 </div>
 
              
-             {  Number(props.allowance.length) >= Number(props.tokenIn.length) ? (
+             { BigInt(props.allowance.length) >= BigInt(props.tokenIn.length) ? (
 
                 <CustomisedButton variant="contained"
                 background="#32003d"

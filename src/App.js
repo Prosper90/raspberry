@@ -1,13 +1,12 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Mainpage from "./components/Mainpage.js";
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
 import logo from "./img/RaspberrySwap_logo.png";
 import { ReactNotifications } from 'react-notifications-component';
 import 'react-notifications-component/dist/theme.css';
-import SearchedToken from "./components/searchedtoken/SearchedToken.js";
-import { useParams } from 'react-router-dom';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 
 
@@ -29,14 +28,20 @@ const useStyles = makeStyles( theme => {
     }
 
     },
+
+
+    mobile: {
+       marginRight: '20px',
+       marginBottom: '10px'
+    }
+
     }
   });
 
 
   const imgresponsive = {
-    width: "20%",
+    width: "45%",
     height: "auto"
-
   };
 
 
@@ -47,6 +52,7 @@ const useStyles = makeStyles( theme => {
 
 function App() {
   const classes = useStyles();
+  const WidthChange = useMediaQuery('(max-width:959px)');
 
 
   return (
@@ -56,7 +62,7 @@ function App() {
        <div style={{display:"flex", justifyContent:"center", alignItems:"center"}}>
          <img src={logo} style={imgresponsive} alt="logo-img" />
        </div>
-       <ReactNotifications />
+       <ReactNotifications className={WidthChange ? classes.mobile : classes.desktop } />
          <Container  className={classes.containbody} >
           <Mainpage exact path="/" />
         </Container>

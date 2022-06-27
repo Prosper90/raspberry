@@ -29,8 +29,7 @@ export const ChartComponent = props => {
     const classes = useStyles();
 	const chartContainerRef = useRef();
 
-	useEffect(
-		() => {
+	useEffect(() => {
 			const handleResize = () => {
 				chart.applyOptions({ 
                     width: chartContainerRef.current.clientWidth,
@@ -73,7 +72,7 @@ export const ChartComponent = props => {
 			const chart = createChart(chartContainerRef.current, chartProperties);
 			chart.timeScale().fitContent();
 
-			const newSeries = chart.addLineSeries({
+			const newSeries = chart.addCandlestickSeries({
           priceFormat: {
             type: 'price',
             precision: 6,
@@ -83,6 +82,7 @@ export const ChartComponent = props => {
 
       //console.log(data);
 			newSeries.setData(data);
+      chart.timeScale().fitContent();
 
 			window.addEventListener('resize', handleResize);
 			return () => {
@@ -90,8 +90,7 @@ export const ChartComponent = props => {
 
 				chart.remove();
 			};
-		},
-		[props.data]);
+		}, [props.data]);
 
 	return (
         

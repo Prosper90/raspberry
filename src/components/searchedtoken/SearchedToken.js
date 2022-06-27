@@ -1,13 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, {  } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { styled } from '@material-ui/core/styles';
-//import { useMoralisWeb3Api, useMoralisWeb3ApiCall } from "react-moralis";
-import  { Moralis } from 'moralis';
-//import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
-import { Store } from 'react-notifications-component';
-// preferred way to import (from `v4`). Uses `animate__` prefix.
 import 'animate.css/animate.min.css';
 
 
@@ -68,54 +63,27 @@ const CustomisedButton = styled(Button)({
 
 const useStyles = makeStyles( theme => {
     return{
-        background: {
-            backgroundColor : "#32003d",
-            height: "100%",
-            borderRadius: "30px;",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: '51px',
-            paddingBottom: '5px',
-            [theme.breakpoints.down('sm')]:{
-                gap: '42px',
-                padding: '27px',
-                height: '90%',
-            }
-        },
 
 
-        taxInfo: {
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          textAlign: 'start',
-          width: '80%'
-        },
 
-        each: {
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-          fontSize: '12px',
-          alignItems: 'center'
-        },
-
-        p: {
-          fontSize: '10px',
-        },
-
-        green: {
-          color: '#fff'
+      background: {
+        backgroundColor : "#32003d",
+        height: "440px",
+        borderRadius: "30px;",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: '51px',
+        paddingBottom: '15px',
+        [theme.breakpoints.down('sm')]:{
+            gap: '42px',
+            padding: '27px',
+            height: '90%',
         }
-
-
+    },
 
         
-
-   
-
     }
   });
 
@@ -133,7 +101,9 @@ export default  function Leftcontainer(props) {
 
   return (
     <div className={classes.background}  >
-      This Token is not Listed
+      <Typography variant="body1" >
+          This Token is not Listed
+      </Typography>
     </div>
     
   )

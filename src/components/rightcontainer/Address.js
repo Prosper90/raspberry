@@ -3,7 +3,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import InputBase from '@material-ui/core/InputBase';
-import { Link } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 
 
@@ -13,7 +12,12 @@ const useStyles = makeStyles( theme =>{
     addresscontain: {
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "center"
+      alignItems: "center",
+      [theme.breakpoints.down('sm')]:{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-around',
+    }
     },
 
     address: {
@@ -34,8 +38,6 @@ const useStyles = makeStyles( theme =>{
       transition: theme.transitions.create('width'),
       width: '100%',
       height: '',
-      border: '1px solid #fff',
-      color: '#fff',
       border: 'none',
       outline:'none',
       borderRadius: '15px',
@@ -48,10 +50,25 @@ const useStyles = makeStyles( theme =>{
 
     holdsearchcontain: {
       display: 'flex',
-      justifyContent: 'space-around',
+      justifyContent: 'end',
       width: '100%',
-      flexWrap: 'wrap'
+      flexWrap: 'wrap',
     },
+    
+    holdsearchcontaintwo: {
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'flex-end'
+    },
+
+    holdsearchcontainthree: {
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      flexDirection: 'column-reverse',
+      alignItems: 'flex-end',
+      marginBottom: '8px'
+  },
 
     formContain: {
       display: 'flex',
@@ -63,14 +80,18 @@ const useStyles = makeStyles( theme =>{
       justifyContent: 'center',
       transition: 'all 0.5s',
       transitionTimingFunction: 'ease-in',
+      marginRight: '6px',
       alignItems: 'center',
       [theme.breakpoints.up('md')]: {
         marginBottom: '5px',
-      },
-      [theme.breakpoints.up('xs')]: {
-        width: '20%',
-        height: '18px',
+        marginRight: '10px'
       }
+    },
+
+    formContaintwo: {
+      width: '20%',
+      height: '18px',
+      marginRight: '5px'
     },
 
     inputExpanded: {
@@ -84,6 +105,7 @@ const useStyles = makeStyles( theme =>{
       alignItems: 'center',
       transition: 'all 0.5s',
       transitionTimingFunction: 'ease-out',
+      marginRight: '7px',
       [theme.breakpoints.up('md')]: {
         marginBottom: '5px',
       },
@@ -112,6 +134,7 @@ export default function Address(props) {
   //console.log(props);
   const classes = useStyles();
   const addrssChange = useMediaQuery('(max-width:650px)');
+  const addrssChangetwo = useMediaQuery('(max-width:959px)');
   const history = useHistory();
 
   const[expandInput, setexpandInput] = useState(false);
@@ -144,7 +167,7 @@ export default function Address(props) {
        { props.loginCheck ? <p className={classes.truncate} >{ props.addr }</p> : <p className={classes.walleticon} ><i className="fa-solid fa-wallet"></i></p> }            
       </div>
         
-      <div  className={classes.holdsearchcontain}>
+      <div  className={ addrssChange ? classes.holdsearchcontainthree : addrssChangetwo ? classes.holdsearchcontaintwo :  classes.holdsearchcontain}>
         <form noValidate autoComplete='off'  className={ expandInput ? classes.inputExpanded : classes.formContain } onSubmit={search} >
         <InputBase
                 placeholder="Search Token…"

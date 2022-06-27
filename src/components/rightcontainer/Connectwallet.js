@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, {  } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { styled } from '@material-ui/core/styles';
-import { useHistory } from 'react-router-dom';
+import { ethers } from "ethers";
 
 
 
@@ -59,20 +59,30 @@ const useStyles = makeStyles({
 
 export default function Connectwallet(props) {
   const classes = useStyles();
-  const history = useHistory();
+  const { ethereum } = window;
   //console.log(props);
 
 
 
   const logInto = () => {
-    props.login()
-    props.changeloginValue(true); //changeLoginStat(false); 
+     //console.log("called");
+    if(window.ethereum) {
+
+      props.login();
+      props.changeloginValue(true);  
+
+    } else if(!window.ethereum) {
+      props.mobileLogin();
+    }
+     //changeLoginStat(false); 
     //console.log("clicked");
   }
 
 
   const logOutOf = () => {
-    console.log("connected clicked");
+    if(props.addr) {
+      alert("Already connected");
+    }
   }
 
   const addToken = () => {
