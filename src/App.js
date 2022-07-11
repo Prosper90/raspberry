@@ -31,8 +31,9 @@ const useStyles = makeStyles( theme => {
 
 
     mobile: {
-       marginRight: '20px',
-       marginBottom: '10px'
+       marginRight: '30px',
+       marginLeft: '30px',
+       marginBottom: '20px'
     }
 
     }

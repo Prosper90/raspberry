@@ -12,7 +12,7 @@ import 'animate.css/animate.min.css';
 
 
 
-
+/*
 const CustomisedButton = styled(Button)({
     boxShadow: 'none',
     textTransform: 'none',
@@ -52,7 +52,7 @@ const CustomisedButton = styled(Button)({
     },
     
   });
-
+*/
 
 
 
@@ -79,7 +79,6 @@ const useStyles = makeStyles( theme => {
         [theme.breakpoints.down('sm')]:{
             gap: '42px',
             padding: '27px',
-            height: '90%',
         }
     },
 

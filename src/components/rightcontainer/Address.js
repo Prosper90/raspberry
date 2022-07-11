@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -44,6 +44,7 @@ const useStyles = makeStyles( theme =>{
       color: '#000',
       [theme.breakpoints.up('xs')]: {
         width: '225px',
+        fontSize: '13px'
       },
     },
 
@@ -138,6 +139,7 @@ export default function Address(props) {
   const history = useHistory();
 
   const[expandInput, setexpandInput] = useState(false);
+  const[update] = useState(props.loginCheck);
 
 
 
@@ -154,8 +156,6 @@ export default function Address(props) {
 
     //console.log(props.addr);
 
-
-  
   
   
 

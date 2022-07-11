@@ -17,7 +17,8 @@ import { ethers } from "ethers";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Web3Modal from "web3modal";
 import Fortmatic from "fortmatic";
-import { contractABI, tokenABI, contractAddress, chainID, pancakeRouter, pancakeABIuse } from "../utils/constants";
+import  axios  from 'axios';
+import { contractABI, tokenABI, contractAddress, chainID, pancakeRouter, pancakeABIuse, pancakeFactoryContract, pancakeFactoryuse } from "../utils/constants";
 
 
 
@@ -79,7 +80,7 @@ export default function Mainpage(props) {
     //console.log(WidthChange);
     let [theAddress, setTheAddress] = useState();
     const [checkLoginStat, changeLoginStat] = useState(false);
-    const [initialData, setinitialData] = useState([]);
+    const [initialData, setinitialData] = useState("");
     const [accountToken, setAccountToken] = useState("0");
     const [accountBNB, setAccountBNB] = useState("0");
     const [tokenContract, setTokenContract] = useState("");
@@ -97,9 +98,15 @@ export default function Mainpage(props) {
     const [executed, setExecuted] = useState(false);
     const [createdsigner, setSigner] = useState();
     const [provider, setProvider] = useState();
-    const [mobileprovider, setMobileProvider] = useState({});
-    const [modalconnected, setModalConnected] = useState(false);
     let [loading, setLoading] = useState(false);
+    const [pairAddress, setPairAddress] = useState("");
+    const [providerReady, setproviderReady] = useState(false);
+    const [togglestate, setTogglestate] = useState(false);
+    const [searchTest, setsearchTest] = useState();
+    const [correctChain, setCorrectChain] = useState(false);
+    const [accountChanged, setAccountChanged] = useState(false);
+    const [getInstance, setgetInstance] = useState();
+    const [checkingcorrectchain, setcheckingcorrectchain] = useState(false);
 
     
     const history = useHistory();
@@ -130,13 +137,12 @@ export default function Mainpage(props) {
               package: WalletConnectProvider, // required
               options: {
                 rpc: {
-                  1: "https://bsc-dataseed1.binance.org/",
-                  2: "https://bsc-dataseed2.binance.org/",
-                  3: "https://bsc-dataseed1.defibit.io/",
-                  4: "https://bsc-dataseed3.defibit.io/",
-                  5: "https://bsc-dataseed1.ninicoin.io/",
-                  6: "https://bsc-dataseed4.ninicoin.io/"
-                } // required
+                  56: "https://bsc-dataseed1.binance.org/",
+                }, // required
+
+                network: 'binance',
+                chainId: 56,
+
               }
             },
             fortmatic: {
@@ -155,16 +161,16 @@ export default function Mainpage(props) {
           });
 
           const instance = await web3Modal.connect();
-          const gettingprovider = new ethers.providers.Web3Provider( instance )
-          setMobileProvider( gettingprovider );
-          setModalConnected(true);
+          setgetInstance(instance);
+          const gettingprovider = await new ethers.providers.Web3Provider( instance )
+          setProvider( gettingprovider );
     }
 
 
    
     const getextensionProvider = async () => {
-      
-        setProvider( new ethers.providers.Web3Provider(window.ethereum) );
+        const exprovider = await new ethers.providers.Web3Provider(window.ethereum);
+        setProvider(exprovider);
         //console.log("using this one");
     }
     
@@ -172,11 +178,127 @@ export default function Mainpage(props) {
 
 
 
-
     
+    //useeffect
+    useEffect(() => {
+
+      // set provider
+        if(!window.ethereum){
+          //console.log("outside ran")
+          if(!provider){
+             connectmetamask();
+          }
+        } else {
+          if(!provider){
+            getextensionProvider();
+          } 
+        }
+       
+        if(providerReady){
+          getPairContract();
+        }
+
+  
+  
+      //Get provider ready
+        if(provider) {
+          //console.log("ready");
+          setproviderReady(true);
+          getCorrectChain();
+          console.log(correctChain);
+        }
+  
+      
+  
+  
+  
+      // for searching listed tokens
+      const fetchdata = async () => {
+       
+       if(  token &&  !searchTest ){
+
+        console.log(correctChain);
+         console.log(token);
+         setTimeout(() => {
+          console.log(correctChain);    
+            if(providerReady){
 
 
-   const [searchTest, setsearchTest] = useState();
+                if(correctChain){
+                  changeToken(token);
+                  fetchDataChartsPrice();
+                } else if(!correctChain) {
+                  setWrongChainnotification();
+                }
+
+
+            } else {
+              if(!theAddress){
+                Loginfirst();
+              }
+            }
+
+        }, 4000);
+
+  
+       } else if ( token  &&  searchTest ){
+         if(providerReady) {
+          if(correctChain){
+            changeToken(searchTest);
+            fetchDataChartsPrice();
+          } else {
+            setWrongChainnotification();
+          }
+         }
+       }
+  
+      
+       }
+  
+      fetchdata();
+  
+  
+      }, [searchTest, searchChanged, theAddress, providerReady, togglestate, checkLoginStat, accountChanged]);
+  
+  
+      //second useEffect to check if account is connected
+      useEffect(() => {
+        if(window.ethereum){
+          if(provider){
+            updateAccount();
+          }
+        }
+      });
+      
+  
+     //third useEffect to check if account is connected
+    useEffect(() => {
+        if(window.ethereum){
+          if(provider){
+            checkIfWalletIsConnect();
+          }
+        }
+    }, [executed, theAddress]);
+  
+  
+  
+  
+
+
+
+    const getCorrectChain = async () => {
+      //const chainId = await provider.getNetwork();
+
+      //const chainId = await provider.getSigner().getChainId();
+      console.log(typeof(chainID));
+      if(chainID === 56){
+        await setCorrectChain(true);
+      } else {
+       await setCorrectChain(false);
+      }
+
+    }
+
 
 
      //gets the inputed Token Contract
@@ -192,8 +314,54 @@ export default function Mainpage(props) {
       }
 
 
+
+      const Loginfirst = () => {
+ 
+        Store.addNotification({
+          title: "Wallet Not Connected",
+          message: "Connect Wallet",
+          type: "warning",
+          insert: "top",
+          container: "top-right",
+          animationIn: ["animate__animated", "animate__fadeIn"],
+          animationOut: ["animate__animated", "animate__fadeOut"],
+          dismiss: {
+            duration: 6000,
+            onScreen: true
+          },
+          width: 400
+        });
+
+        return ;
+  }
+
+
+      
+      const setWrongChainnotification = () => {
+ 
+            Store.addNotification({
+              title: "Wrong Chain",
+              message: "Switch to BSC mainnet",
+              type: "warning",
+              insert: "top",
+              container: "top-right",
+              animationIn: ["animate__animated", "animate__fadeIn"],
+              animationOut: ["animate__animated", "animate__fadeOut"],
+              dismiss: {
+                duration: 5000,
+                onScreen: true
+              },
+              width: 400
+            });
+
+            return ;
+      }
+
+
       //searches for token and gets appropraite info about it for buying and selling to happen
+
       const changeToken = async (address) => {
+
         setTokenContract(address);
         setLoading(true);
         if (!ethers.utils.isAddress(address)) {
@@ -218,6 +386,7 @@ export default function Mainpage(props) {
             setTokenDecimals(await Token.decimals());
             setBuyFee(data[3]);
             setSellFee(data[2]);
+            //console.log(data);
             if (theAddress) {
                 checkAllowance(theAddress, address);
             }
@@ -244,88 +413,16 @@ export default function Mainpage(props) {
 
 
 
-    //useeffect
-    useEffect(() => {
-
-      
-      if(!window.ethereum){
-        //console.log("outside ran")
-          connectmetamask();
-      } else {
-        getextensionProvider();
-      }
-
-
-
-      fetchDataChartsPrice(); 
-  
-
-    // for searching listed tokens
-    const fetchdata = async () => {
-     
-     if(  token &&  !searchTest ){
-      //console.log("direct call called");
-      changeToken(token);
-      //console.log(token);
-
-     } else if ( token  &&  searchTest ){
-       //settokenData(transaction);
-       //console.log("in-direct call called");
-       changeToken(searchTest);
-
-     }
-
-    
-     }
-
-    fetchdata();
-    }, [searchTest, searchChanged]);
-
-
-    //second useEffect to check if account is connected
-    useEffect(() => {
-      if(window.ethereum){
-        if(provider){
-          updateAccount();
-        }
-      }
-    });
-    
-
-   //third useEffect to check if account is connected
-  useEffect(() => {
-      if(window.ethereum){
-        if(provider){
-          checkIfWalletIsConnect();
-        }
-      }
-  }, [executed, theAddress]);
-
-
-
-
     history.listen((location) => {
       setsearchTest(location.state.address);
     });
 
 
 
-    /*
-    const detectMetamask = () => {
-      if(!window.ethereum){
-        connectmetamask();
-        return false;
-      } else {
-        return true;
-      }
-    }
-*/
-
 
     const checkIfWalletIsConnect = async () => {
 
       if(window.ethereum){
-
               //console.log(provider);
               const chainId = await provider.getNetwork();
               //console.log(chainId.chainId);
@@ -339,7 +436,7 @@ export default function Mainpage(props) {
                   await window.ethereum.request({
                     method: "wallet_switchEthereumChain",
                     params: [{
-                        chainId: `0x${Number(97).toString(16)}`,
+                        chainId: `0x${Number(56).toString(16)}`,
                     }]
                   });
 
@@ -436,54 +533,6 @@ export default function Mainpage(props) {
 
      }
 
-
-     //update mobile
-     /*
-     const updatemobileAccount = async () => {
-      if(executed === false ){
-          let account = theAddress;
-          if (!account) {
-              console.log(mobileprovider);
-              const signer = mobileprovider.getSigner()
-              account =  await signer.getAddress();
-          }
-          
-          if (tokenContract) {
-              setAccountToken(String(await getTokenContract(tokenContract).balanceOf(account)));
-              checkAllowance(account, tokenContract);
-          }
-          setAccountBNB(String(await mobileprovider.getBalance(account)));
-          //console.log("I Ran");
-          setExecuted(true);
-          login();
-
-     } else if(executed === true ) {
-
-          let account = theAddress;
-          if (!account) {
-            const signer = mobileprovider.getSigner();
-            account =  await signer.getAddress();
-          }
-          
-          if (tokenContract) {
-              setAccountToken(String(await getTokenContract(tokenContract).balanceOf(account)));
-              checkAllowance(account, tokenContract);
-          }
-          setAccountBNB(String(await mobileprovider.getBalance(account)));
-
-          
-          const signer = mobileprovider.getSigner();
-          const accounts =  await signer.getAddress();
-        
-          setTheAddress(accounts);
-          changeLoginStat(true);
-      
-     }
-
-     }
-     */
-
-     
     
     
 
@@ -523,7 +572,8 @@ export default function Mainpage(props) {
                 animationOut: ["animate__animated", "animate__fadeOut"],
                 dismiss: {
                   duration: 1000,
-                  onScreen: true
+                  onScreen: true,
+                  showIcon: true
                 },
                 width: 400
     
@@ -543,21 +593,19 @@ export default function Mainpage(props) {
 
      const mobileLogin = async () => {
 
-      console.log(mobileprovider);
-    
-      const chainId = await mobileprovider.getSigner().getChainId();
-      console.log(chainId);
-  
-      if (chainId.chainId === chainID){
 
-           if(executed === true) {
-             
+      const chainId = await provider.getSigner().getChainId();
+
+  
+      if (chainId === chainID){
+
              
                //console.log("executed two");
               //const chainId = await provider.getChainId();
 
-              const signer = mobileprovider.getSigner();
-              const account = await signer.getAddress() 
+              const signer = provider.getSigner();
+              const account = await signer.getAddress();
+              console.log(account);
              
 
               setTheAddress(account);
@@ -581,11 +629,12 @@ export default function Mainpage(props) {
     
               });
          
-           } 
+     
 
 
 
         } else {
+
           Store.addNotification({
             title: "Wrong Chain Switch",
             message: "",
@@ -600,9 +649,11 @@ export default function Mainpage(props) {
             },
             width: 400
           });
+ 
+          changeLoginStat(false);
         }
 
-        changeLoginStat(false);
+
 
      }
 
@@ -613,56 +664,39 @@ export default function Mainpage(props) {
 
 
 
-  //chart side
 
- //get particular date
- /*
- const dates = new Array(8).fill().map((e, i) => {
-  return moment().subtract(i, "d").format("YYYY-MM-DD");
-}).reverse();
-*/
+  const getPairContract = async () => {
 
+     let addressToLookUp;
 
- 
+    if( token &&  !searchTest ){
+      //console.log(token);
+      addressToLookUp = token;
+    } else if(token  &&  searchTest){
+      //console.log(searchTest);
+      addressToLookUp = searchTest;
+    } else {
+      addressToLookUp = "0x97c6825e6911578A515B11e25B552Ecd5fE58dbA";
+    }
 
-
-
-//format date
-/*
-const formatdate = (incoming) => {
-  var date = new Date(incoming); // Date 2011-05-09T06:08:45.178Z
-  var year = date.getFullYear();
-  var month = ("0" + (date.getMonth() + 1)).slice(-2);
-  var day = ("0" + date.getDate()).slice(-2);
-
-  var formatted = `${year}-${month}-${day}`;
-  console.log(formatted);
-      
-  return  formatted; // 2011-05-09
-}
-*/
-
-
-
-
+    const signer = provider.getSigner();
+    const pairContract = new ethers.Contract(pancakeFactoryContract, pancakeFactoryuse, signer);
+    const value = await pairContract.getPair("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", addressToLookUp);
+    //console.log(value);
+    setPairAddress(value)
+  }
 
 
 
 
   //for pricefunction
   const fetchDataChartsPrice = async () => {
-    
     let addressToLookUp;
-    const today = moment().format("YYYY-MM-DD");
-    //console.log(today);
 
     if( token &&  !searchTest ){
-      //console.log(token);
       addressToLookUp = token;
-      setsearchChanged(token);
-      
+      setsearchChanged(token);      
     } else if(token  &&  searchTest){
-      //console.log(searchTest);
       addressToLookUp = searchTest;
       setsearchChanged(searchTest);
     } else {
@@ -671,44 +705,43 @@ const formatdate = (incoming) => {
 
 
 
-      
-      const response = await fetch(`https://api.coinbrain.com/cointoaster/coins/history-new/usd/?since=${today}T06%3A56%3A34.000Z&minuteInterval=5&baseToken=${addressToLookUp}&liquidityPoolAddress=0x815bff37827499d800B0Da4000A318c6488aD4cA`);
-      const data = await response.json();
-      //console.log(data);
-      
-       let chartarr = [];
-       let index ;
-       data.map((each) => {
-
-
-         if(each.date !== index ){
- 
-           //console.log(index);
-           
-           const d = moment(each.date).utc().valueOf();
-
-
-
-           chartarr.push({
-             time: d,
-             open: each.openPrice, 
-             high: each.maximumPrice, 
-             low: each.minimumPrice, 
-             close: each.closePrice,
-             });
-
-             index = each.date;
+          if(pairAddress) {
+               //console.log("Finally called");
+               setinitialData(pairAddress);
+               setPairAddress("");
+         } else {
+           //console.log("toggling");
+          setTogglestate(!togglestate);
          }
-
-       });
-       
-       //console.log(chartarr);
-       setinitialData(chartarr);
 
   };
 
-  
 
+
+  //on account changed
+  if(window.ethereum){
+
+  window.ethereum.on('accountsChanged', function (accounts) {
+    // Time to reload your interface with accounts[0]!
+    setAccountChanged(!accountChanged);
+  });
+
+}
+
+
+  if(!window.ethereum && provider){
+
+    // Subscribe to accounts change
+    getInstance.on("accountsChanged", async (accounts) => {
+        //setAccountChanged(!accountChanged);
+        //mobileLogin()
+        setTheAddress(accounts[0]);
+        changeLoginStat(true);
+      });
+
+  }
+
+  
 
 
 
@@ -803,8 +836,7 @@ const formatdate = (incoming) => {
 
           }
 
-
-          <Rightcontainer   initialData={initialData} />
+          <Rightcontainer providerReady={providerReady} searchTest={searchTest}  searchChanged={searchChanged}  initialData={initialData}  />
 
             {!WidthChange ? 
 

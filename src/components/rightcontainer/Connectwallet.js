@@ -65,7 +65,6 @@ export default function Connectwallet(props) {
 
 
   const logInto = () => {
-     //console.log("called");
     if(window.ethereum) {
 
       props.login();
@@ -74,8 +73,7 @@ export default function Connectwallet(props) {
     } else if(!window.ethereum) {
       props.mobileLogin();
     }
-     //changeLoginStat(false); 
-    //console.log("clicked");
+
   }
 
 

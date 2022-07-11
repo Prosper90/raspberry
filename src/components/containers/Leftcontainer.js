@@ -360,7 +360,6 @@ export default  function Leftcontainer(props) {
                     showIcon: true
                   },
                 width: 350
-      
               });
             //console.log(`Success - ${transactionHash.hash}`);
             //setLoading(false);
@@ -604,7 +603,7 @@ export default  function Leftcontainer(props) {
                 Token
             </Typography> : 
             <Typography variant="body1" >
-               {(props.accountToken / 10 ** 18).toFixed(2) }
+               {(props.accountToken / 10 ** props.tokenDecimals).toFixed(2) }
             </Typography>
             </div>
             <div className={classes.pricehold}>
@@ -612,7 +611,7 @@ export default  function Leftcontainer(props) {
                 BNB Received 
             </Typography> 
             <Typography variant="body1" >
-               {(props.BNBOut / 10 ** props.tokenDecimals).toFixed(5)} BNB
+               {(props.BNBOut / 10 ** 18).toFixed(5)} BNB
             </Typography>
             </div>
 

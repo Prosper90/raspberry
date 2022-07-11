@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { ChartComponent } from '../chart/ChartComponent';
-
+import ClipLoader from "react-spinners/ClipLoader";
+import { Suspense } from 'react';
 
 
 
 const useStyles = makeStyles( theme => {
     return{
-    background: {
-        backgroundColor : "#32003d",
-        height: "80%",
+      style: {
+        width: "100%",
+        height: "55vh",
         borderRadius: "30px;",
         display: "flex",
         justifyContent: "center",
@@ -19,38 +19,27 @@ const useStyles = makeStyles( theme => {
         }
     },
 
-    chartie: {
-      width: "100%",
-      height: "100%"
 
-    }
+    background: {
+      background: "#000",
+      width: "100%",
+      height: "55vh",
+      borderRadius: "30px;",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      [theme.breakpoints.down('sm')]:{
+          height: '71vh',
+      }
+  },
+
+
+
 
 }
 
   });
   
-  
-
-
-
-
-
-
-  /*
-  const initialData = [
-
-    { time: '2018-12-22', value: 32.51 },
-    { time: '2018-12-23', value: 31.11 },
-    { time: '2018-12-24', value: 27.02 },
-    { time: '2018-12-25', value: 27.32 },
-    { time: '2018-12-26', value: 25.17 },
-    { time: '2018-12-27', value: 28.89 },
-    { time: '2018-12-28', value: 25.46 },
-    { time: '2018-12-29', value: 23.92 },
-    { time: '2018-12-30', value: 22.68 },
-    { time: '2018-12-31', value: 22.67 },
-];
-*/
 
   
 
@@ -59,12 +48,49 @@ const useStyles = makeStyles( theme => {
 
 export default function Rightcontainer(props) {
   const classes = useStyles();
+  //const [updated] = useState(props.initialData);
+  const [ready, setReady] = useState(true);
+  const [pagesrc, setPageSrc] = useState("");
+
+
+  //console.log(props.initialData);
+
+
+useEffect(() => {
+
+  setReady(true);
+
+
+    setTimeout(() => {
+      setReady(false);
+    }, 3000);
+
+    if(props.providerReady){
+        //console.log("called here awaiting");
+        //console.log(props.initialData);
+        setPageSrc(`https://dexscreener.com/bsc/${props.initialData}?embed=1&theme=dark&trades=0&info=0`);
+
+    } else {
+      //console.log("using default")
+      setPageSrc(`https://dexscreener.com/bsc/0x815bff37827499d800b0da4000a318c6488ad4ca?embed=1&theme=dark&trades=0&info=0`)
+    }
+  
+}, [props.initialData, props.searchTest, props.searchChanged]);
+
+
 
 
 
   return (
     <div   className={classes.background} >
-      <ChartComponent data={ props.initialData }></ChartComponent>
+      { ready ?
+                  <ClipLoader color={"#FFFFFF"} loading={ready}  size={30} />
+
+                  :
+                <Suspense fallback={<div>Loading...</div>}>
+                  <iframe src={pagesrc} className={classes.style} ></iframe>
+                </Suspense>
+      }
     </div>
   )
 }
